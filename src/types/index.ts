@@ -2,7 +2,8 @@ export interface Property {
   id: string;
   address: string;
   propertyType: 'apartment' | 'house' | 'condo' | 'commercial';
-  units?: string;
+  units?: number;
+  isMultiUnit: boolean;
   owner: string;
   managedBy: string;
 }
@@ -28,6 +29,7 @@ export interface ChecklistItem {
 export interface Inspection {
   id: string;
   propertyId: string;
+  unitNumber?: number;
   type: 'move-in' | 'move-out' | 'routine';
   status: 'in-progress' | 'completed' | 'signed';
   createdAt: string;

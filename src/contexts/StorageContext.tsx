@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Inspection, Property, Report } from '../types';
+import { generateInspectionStructure } from '../utils/inspectionTemplates';
+import { generateInspectionId, generatePropertyId } from '../utils/idGenerator';
 
 interface StorageContextType {
   inspections: Inspection[];
@@ -74,6 +76,75 @@ export function StorageProvider({ children }: { children: React.ReactNode }) {
     updated.push(property);
     setProperties(updated);
     localStorage.setItem('properties', JSON.stringify(updated));
+    
+    // Auto-generate inspections for the new property
+    await generateInspectionsForProperty(property);
+  };
+
+  const generateInspectionsForProperty = async (property: Property) => {
+    const inspectionsToCreate = [];
+    
+    if (property.isMultiUnit && property.units && property.units > 1) {
+      // Multi-unit property: create inspection for each unit
+      for (let unitNumber = 1; unitNumber <= property.units; unitNumber++) {
+        const inspectionId = generateInspectionId(property.id, unitNumber);
+        const includeCommonAreas = unitNumber === 1; // Only first unit gets common areas
+        const rooms = generateInspectionStructure(includeCommonAreas);
+        
+        const inspection: Inspection = {
+          id: inspectionId,
+          propertyId: property.id,
+          unitNumber: unitNumber,
+          type: 'move-in',
+          status: 'in-progress',
+          createdAt: new Date().toISOString(),
+          inspector: {
+            id: 'auto_generated',
+            name: 'Auto Generated',
+            email: 'system@example.com',
+            role: 'property_manager',
+          },
+          rooms,
+          generalNotes: '',
+          signatures: [],
+          reportGenerated: false,
+          syncStatus: 'offline',
+        };
+        
+        inspectionsToCreate.push(inspection);
+      }
+    } else {
+      // Single-family home: create one inspection
+      const inspectionId = generateInspectionId(property.id, 1);
+      const rooms = generateInspectionStructure(false);
+      
+      const inspection: Inspection = {
+        id: inspectionId,
+        propertyId: property.id,
+        unitNumber: 1,
+        type: 'move-in',
+        status: 'in-progress',
+        createdAt: new Date().toISOString(),
+        inspector: {
+          id: 'auto_generated',
+          name: 'Auto Generated',
+          email: 'system@example.com',
+          role: 'property_manager',
+        },
+        rooms,
+        generalNotes: '',
+        signatures: [],
+        reportGenerated: false,
+        syncStatus: 'offline',
+      };
+      
+      inspectionsToCreate.push(inspection);
+    }
+    
+    // Save all generated inspections
+    for (const inspection of inspectionsToCreate) {
+      await saveInspection(inspection);
+    }
   };
 
   const getProperties = () => properties;

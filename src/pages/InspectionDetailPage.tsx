@@ -142,6 +142,11 @@ export function InspectionDetailPage() {
                 <h1 className="text-xl font-semibold text-gray-900">
                   {inspection.type.replace('-', ' ')} Inspection
                 </h1>
+                {inspection.unitNumber && (
+                  <p className="text-sm text-blue-600 font-medium">
+                    Unit {inspection.unitNumber.toString().padStart(2, '0')}
+                  </p>
+                )}
                 <p className="text-sm text-gray-600">
                   {progress}/{totalItems} items completed
                 </p>

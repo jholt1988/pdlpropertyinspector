@@ -112,6 +112,11 @@ export function InspectionsPage() {
                         <h3 className="text-lg font-semibold text-gray-900">
                           {getInspectionTypeLabel(inspection.type)}
                         </h3>
+                        {inspection.unitNumber && (
+                          <p className="text-sm text-blue-600 font-medium">
+                            Unit {inspection.unitNumber.toString().padStart(2, '0')}
+                          </p>
+                        )}
                         <p className="text-sm text-gray-600">
                           Property ID: {inspection.propertyId}
                         </p>

@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Trash2, Home, Building2, MapPin } from 'lucide-react';
 import { useStorage } from '../contexts/StorageContext';
 import { Property, Inspection, Room, UserInfo } from '../types';
-import { generateRoomTemplate, DEFAULT_ROOMS } from '../utils/inspectionTemplates';
+import { generateRoomTemplate, generateInspectionStructure, ROOM_TYPE_OPTIONS, SECTION_TEMPLATES } from '../utils/inspectionTemplates';
+import { generatePropertyId } from '../utils/idGenerator';
 
 export function NewInspectionPage() {
   const navigate = useNavigate();
@@ -18,7 +19,8 @@ export function NewInspectionPage() {
   const [newPropertyForm, setNewPropertyForm] = useState({
     address: '',
     propertyType: 'apartment' as 'apartment' | 'house' | 'condo' | 'commercial',
-    units: '',
+    units: 1,
+    isMultiUnit: false,
     owner: '',
     managedBy: '',
   });
@@ -61,15 +63,13 @@ export function NewInspectionPage() {
 
   useEffect(() => {
     if (step === 3) {
-      initializeRooms();
+      initializeRoomsFromTemplate();
     }
   }, [step]);
 
-  const initializeRooms = () => {
-    const defaultRooms = DEFAULT_ROOMS.map(room => 
-      generateRoomTemplate(room.type, room.name)
-    );
-    setRooms(defaultRooms);
+  const initializeRoomsFromTemplate = () => {
+    const templateRooms = generateInspectionStructure(false);
+    setRooms(templateRooms);
   };
 
   const handleCreateProperty = async () => {
@@ -80,10 +80,11 @@ export function NewInspectionPage() {
 
     try {
       const newProperty: Property = {
-        id: `prop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        id: generatePropertyId(),
         address: newPropertyForm.address,
         propertyType: newPropertyForm.propertyType,
         units: newPropertyForm.units,
+        isMultiUnit: newPropertyForm.isMultiUnit,
         owner: newPropertyForm.owner,
         managedBy: newPropertyForm.managedBy,
       };
@@ -121,6 +122,13 @@ export function NewInspectionPage() {
       }
       return room;
     }));
+  };
+
+  const addRoomFromTemplate = (templateType: string, customName?: string) => {
+    const roomOption = ROOM_TYPE_OPTIONS.find(option => option.value === templateType);
+    const roomName = customName || roomOption?.label || 'New Room';
+    const newRoom = generateRoomTemplate(templateType, roomName);
+    setRooms([...rooms, newRoom]);
   };
 
   const createInspection = async () => {
@@ -291,13 +299,48 @@ export function NewInspectionPage() {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Units (optional)</label>
+              <label className="form-label">Property Configuration</label>
+              <div className="space-y-3">
+                <label className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={newPropertyForm.isMultiUnit}
+                    onChange={(e) => setNewPropertyForm({ 
+                      ...newPropertyForm, 
+                      isMultiUnit: e.target.checked,
+                      units: e.target.checked ? newPropertyForm.units : 1
+                    })}
+                    className="w-4 h-4 text-blue-600 rounded"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Multi-unit property</span>
+                </label>
+                
+                {newPropertyForm.isMultiUnit && (
+                  <div>
+                    <label className="form-label">Number of Units</label>
+                    <input
+                      type="number"
+                      min="2"
+                      max="50"
+                      className="form-input"
+                      value={newPropertyForm.units}
+                      onChange={(e) => setNewPropertyForm({ 
+                        ...newPropertyForm, 
+                        units: parseInt(e.target.value) || 2 
+                      })}
+                      placeholder="Enter number of units"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Additional Details (optional)</label>
               <input
                 type="text"
                 className="form-input"
-                value={newPropertyForm.units}
-                onChange={(e) => setNewPropertyForm({ ...newPropertyForm, units: e.target.value })}
-                placeholder="e.g., Unit 2A, Suite 100"
+                placeholder="e.g., Building details, special notes"
               />
             </div>
 
@@ -363,6 +406,17 @@ export function NewInspectionPage() {
                 className="flex-1 form-input"
                 placeholder="Room name"
               />
+              <select
+                value={room.type}
+                onChange={(e) => updateRoomType(room.id, e.target.value)}
+                className="form-input w-48"
+              >
+                {ROOM_TYPE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
               <button
                 onClick={() => removeRoom(room.id)}
                 className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
@@ -370,35 +424,53 @@ export function NewInspectionPage() {
                 <Trash2 size={16} />
               </button>
             </div>
-            
-            <div className="flex gap-2 overflow-x-auto">
-              {['bedroom', 'bathroom', 'kitchen', 'living', 'dining', 'utility', 'other'].map((type) => (
-                <button
-                  key={type}
-                  onClick={() => updateRoomType(room.id, type)}
-                  className={`px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap transition ${
-                    room.type === type
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  {type}
-                </button>
-              ))}
+            <div className="text-xs text-gray-500">
+              {room.checklistItems.length} inspection points included
             </div>
           </div>
         ))}
       </div>
 
-      <button
-        onClick={addRoom}
-        className="w-full p-4 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition"
-      >
-        <div className="flex items-center justify-center gap-2 text-blue-600">
-          <Plus size={20} />
-          <span className="font-medium">Add Room</span>
+      {/* Quick Add Templates */}
+      <div className="space-y-4">
+        <h3 className="font-medium text-gray-900">Quick Add Templates</h3>
+        <div className="grid grid-cols-2 gap-3">
+          {ROOM_TYPE_OPTIONS.filter(option => ['bedroom', 'bathroom', 'kitchen', 'living_room'].includes(option.value)).map((option) => (
+            <button
+              key={option.value}
+              onClick={() => addRoomFromTemplate(option.value)}
+              className="p-3 border border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition text-left"
+            >
+              <div className="font-medium text-gray-900">{option.label}</div>
+              <div className="text-xs text-gray-500">
+                {ROOM_TEMPLATES[option.value]?.length || 0} inspection points
+              </div>
+            </button>
+          ))}
         </div>
-      </button>
+        
+        <button
+          onClick={addRoom}
+          className="w-full p-4 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition"
+        >
+          <div className="flex items-center justify-center gap-2 text-blue-600">
+            <Plus size={20} />
+            <span className="font-medium">Add Custom Room</span>
+          </div>
+        </button>
+      </div>
+
+      {/* Sections Overview */}
+      <div className="card bg-blue-50">
+        <h3 className="font-medium text-blue-900 mb-2">Inspection Structure</h3>
+        <div className="text-sm text-blue-800 space-y-1">
+          <div>• Exterior Section: Building, landscaping, parking areas</div>
+          <div>• Interior Section: All indoor rooms and spaces</div>
+          {selectedProperty?.isMultiUnit && (
+            <div>• Common Areas: Shared spaces (first unit only)</div>
+          )}
+        </div>
+      </div>
 
       <button
         onClick={createInspection}
