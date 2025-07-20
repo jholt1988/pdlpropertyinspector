@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Trash2, Home, Building2, MapPin } from 'lucide-react';
 import { useStorage } from '../contexts/StorageContext';
 import { Property, Inspection, Room, UserInfo } from '../types';
-import { generateRoomTemplate, generateInspectionStructure, ROOM_TYPE_OPTIONS, SECTION_TEMPLATES } from '../utils/inspectionTemplates';
+import { generateRoomTemplate, generateInspectionStructure, ROOM_TYPE_OPTIONS, SECTION_TEMPLATES, ROOM_TEMPLATES } from '../utils/inspectionTemplates';
 import { generatePropertyId } from '../utils/idGenerator';
 
 export function NewInspectionPage() {
