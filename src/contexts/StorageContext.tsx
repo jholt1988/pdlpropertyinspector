@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Inspection, Property, Report } from '../types';
 import { generateInspectionStructure } from '../utils/inspectionTemplates';
-import { generateInspectionId, generatePropertyId } from '../utils/idGenerator';
+import { generateInspectionId } from '../utils/idGenerator';
 
 interface StorageContextType {
   inspections: Inspection[];

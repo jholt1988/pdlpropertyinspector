@@ -83,7 +83,7 @@ export function usePermissions() {
 }
 
 // Helper function to check ownership
-function checkOwnership(resource: string, resourceId: string | undefined, userId: string): boolean {
+function checkOwnership(_resource: string, _resourceId: string | undefined, _userId: string): boolean {
   // This would typically query your database to check ownership
   // For now, returning true as a placeholder
   // In a real app, you'd check if the user owns the resource
