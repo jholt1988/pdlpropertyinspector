@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Trash2 } from 'lucide-react';
 import { useStorage } from '../contexts/StorageContext';
+import { CanCreate, CanDelete } from '../components/PermissionGuard';
 
 export function InspectionsPage() {
   const { inspections, deleteInspection } = useStorage();
@@ -71,10 +72,12 @@ export function InspectionsPage() {
               <h1 className="text-3xl font-bold text-gray-900">Inspections</h1>
               <p className="text-gray-600 mt-1">{filteredInspections.length} inspections</p>
             </div>
-            <Link to="/inspections/new" className="btn btn-primary">
-              <Plus size={20} />
-              New
-            </Link>
+            <CanCreate resource="inspection">
+              <Link to="/inspections/new" className="btn btn-primary">
+                <Plus size={20} />
+                New
+              </Link>
+            </CanCreate>
           </div>
         </div>
       </div>
@@ -149,13 +152,15 @@ export function InspectionsPage() {
                   </div>
                 </Link>
 
-                <button
-                  onClick={(e) => handleDeleteInspection(inspection.id, e)}
-                  className="absolute top-4 right-4 p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
-                  title="Delete inspection"
-                >
-                  <Trash2 size={16} />
-                </button>
+                <CanDelete resource="inspection" resourceId={inspection.id}>
+                  <button
+                    onClick={(e) => handleDeleteInspection(inspection.id, e)}
+                    className="absolute top-4 right-4 p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                    title="Delete inspection"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </CanDelete>
               </div>
             ))}
           </div>
@@ -167,10 +172,12 @@ export function InspectionsPage() {
                 ? 'Create your first inspection to get started' 
                 : `No ${activeFilter.replace('-', ' ')} inspections yet`}
             </p>
-            <Link to="/inspections/new" className="btn btn-primary">
-              <Plus size={20} />
-              Create New Inspection
-            </Link>
+            <CanCreate resource="inspection">
+              <Link to="/inspections/new" className="btn btn-primary">
+                <Plus size={20} />
+                Create New Inspection
+              </Link>
+            </CanCreate>
           </div>
         )}
       </div>
