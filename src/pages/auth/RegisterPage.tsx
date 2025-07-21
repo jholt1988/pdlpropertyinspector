@@ -104,6 +104,9 @@ export function RegisterPage() {
     setError(errorMessage);
   };
 
+  const handleAccountLinking = (email: string) => {
+    setError(`An account with email ${email} already exists. Please use the login page to sign in.`);
+  };
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -131,6 +134,7 @@ export function RegisterPage() {
             <SocialLoginButtons 
               onSuccess={handleSocialLoginSuccess}
               onError={handleSocialLoginError}
+              onAccountLinking={handleAccountLinking}
             />
           </div>
 

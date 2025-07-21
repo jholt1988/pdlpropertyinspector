@@ -1,22 +1,49 @@
+import { useState } from 'react';
+import { SocialAuthService } from '../services/socialAuthService';
 import { useAuth } from '../contexts/AuthContext';
 
 interface SocialLoginButtonsProps {
   onSuccess?: () => void;
   onError?: (error: string) => void;
+  onAccountLinking?: (email: string) => void;
 }
 
-export function SocialLoginButtons({ onSuccess, onError }: SocialLoginButtonsProps) {
-  const { socialLogin, isLoading } = useAuth();
+export function SocialLoginButtons({ onSuccess, onError, onAccountLinking }: SocialLoginButtonsProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
 
   const handleSocialLogin = async (provider: 'google' | 'microsoft' | 'apple') => {
+    setIsLoading(true);
+    setLoadingProvider(provider);
+
     try {
-      await socialLogin(provider);
-      onSuccess?.();
+      // In demo mode, simulate the OAuth flow
+      const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true' || 
+                        import.meta.env.NODE_ENV === 'development';
+      
+      if (isDemoMode) {
+        const result = await SocialAuthService.initiateSocialLogin(provider);
+        if (result && result.success) {
+          onSuccess?.();
+        }
+      } else {
+        // Production OAuth flow - this will redirect to provider
+        await SocialAuthService.initiateSocialLogin(provider);
+      }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Social login failed';
-      onError?.(errorMessage);
+      if (error instanceof Error && error.message.includes('account linking')) {
+        onAccountLinking?.(error.message);
+      } else {
+        const errorMessage = error instanceof Error ? error.message : 'Social login failed';
+        onError?.(errorMessage);
+      }
+    } finally {
+      setIsLoading(false);
+      setLoadingProvider(null);
     }
   };
+
+  const isProviderLoading = (provider: string) => isLoading && loadingProvider === provider;
 
   return (
     <div className="space-y-2">
@@ -25,8 +52,8 @@ export function SocialLoginButtons({ onSuccess, onError }: SocialLoginButtonsPro
         disabled={isLoading}
         className="w-full flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
       >
-        {isLoading ? (
-          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-600"></div>
+        {isProviderLoading('google') ? (
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
         ) : (
           <>
             <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
@@ -57,8 +84,8 @@ export function SocialLoginButtons({ onSuccess, onError }: SocialLoginButtonsPro
         disabled={isLoading}
         className="w-full flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
       >
-        {isLoading ? (
-          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-600"></div>
+        {isProviderLoading('microsoft') ? (
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
         ) : (
           <>
             <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
@@ -77,8 +104,8 @@ export function SocialLoginButtons({ onSuccess, onError }: SocialLoginButtonsPro
         disabled={isLoading}
         className="w-full flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-black text-xs font-medium text-white hover:bg-gray-800 transition disabled:opacity-50"
       >
-        {isLoading ? (
-          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+        {isProviderLoading('apple') ? (
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
         ) : (
           <>
             <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">

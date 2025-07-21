@@ -63,6 +63,9 @@ export function LoginPage() {
     setError(errorMessage);
   };
 
+  const handleAccountLinking = (email: string) => {
+    setError(`An account with email ${email} already exists. Please enter your password below to link your social account, or use email login.`);
+  };
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -90,6 +93,7 @@ export function LoginPage() {
             <SocialLoginButtons 
               onSuccess={handleSocialLoginSuccess}
               onError={handleSocialLoginError}
+              onAccountLinking={handleAccountLinking}
             />
           </div>
 

@@ -18,6 +18,7 @@ const LoginPage = lazy(() => import('./pages/auth/LoginPage').then(module => ({ 
 const RegisterPage = lazy(() => import('./pages/auth/RegisterPage').then(module => ({ default: module.RegisterPage })));
 const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage').then(module => ({ default: module.ForgotPasswordPage })));
 const EmailVerificationPage = lazy(() => import('./pages/auth/EmailVerificationPage').then(module => ({ default: module.EmailVerificationPage })));
+const SocialCallbackPage = lazy(() => import('./pages/auth/SocialCallbackPage').then(module => ({ default: module.SocialCallbackPage })));
 
 // Loading fallback component
 function LoadingFallback() {
@@ -43,6 +44,9 @@ function App() {
               <Route path="/auth/register" element={<RegisterPage />} />
               <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/auth/verify-email" element={<EmailVerificationPage />} />
+              <Route path="/auth/callback/google" element={<SocialCallbackPage />} />
+              <Route path="/auth/callback/microsoft" element={<SocialCallbackPage />} />
+              <Route path="/auth/callback/apple" element={<SocialCallbackPage />} />
               
               {/* Protected routes */}
               <Route path="/*" element={
