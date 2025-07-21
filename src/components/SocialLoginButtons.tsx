@@ -50,7 +50,7 @@ export function SocialLoginButtons({ onSuccess, onError, onAccountLinking }: Soc
       <button
         onClick={() => handleSocialLogin('google')}
         disabled={isLoading}
-        className="w-full flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
+        className="w-half flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
       >
         {isProviderLoading('google') ? (
           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
