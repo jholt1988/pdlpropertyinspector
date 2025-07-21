@@ -3,8 +3,7 @@ import {
   generateRefreshToken, 
   verifyRefreshToken, 
   generateSessionId, 
-  generateTokenFamily,
-  TokenPayload 
+  generateTokenFamily
 } from '../utils/security/jwtUtils';
 import { hashPassword, verifyPassword } from '../utils/security/passwordUtils';
 import { validateRegistrationData, validateLoginCredentials } from '../utils/security/inputValidation';
