@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface KeyCheckLogoProps {
   size?: 'sm' | 'md' | 'lg';
   className?: string;

@@ -10,6 +10,7 @@ declare global {
       readonly VITE_GOOGLE_CLIENT_ID?: string;
       readonly VITE_MICROSOFT_CLIENT_ID?: string;
       readonly VITE_APPLE_CLIENT_ID?: string;
+      readonly VITE_JWT_SECRET?: string;
     }
   }
 }
