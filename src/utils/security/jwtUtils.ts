@@ -1,4 +1,4 @@
-import { SignJWT, jwtVerify } from 'jose';
+import { JWTPayload, SignJWT, jwtVerify } from 'jose';
 
 // JWT configuration
 const JWT_SECRET = new TextEncoder().encode(
@@ -8,7 +8,7 @@ const JWT_SECRET = new TextEncoder().encode(
 const JWT_ISSUER = 'property-inspector-app';
 const JWT_AUDIENCE = 'property-inspector-users';
 
-export interface TokenPayload {
+export interface TokenPayload extends JWTPayload {
   userId: string;
   email: string;
   role: string;
