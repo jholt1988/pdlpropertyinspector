@@ -69,19 +69,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Verify access token
         const payload = await verifyAccessToken(storedAccessToken);
         
-        // Get user data from token payload
-        const userData = {
-          id: payload.userId,
-          email: payload.email,
-          role: payload.role,
-          // Additional user data would typically be fetched from API
-          name: '',
-          createdAt: '',
-          emailVerified: true,
-          provider: 'email' as const,
-          isActive: true,
-          failedLoginAttempts: 0,
-        };
+        // Get complete user data from auth service
+        const fullUser = authService.getUserById(payload.userId);
+        if (!fullUser) {
+          clearTokens();
+          setIsLoading(false);
+          return;
+        }
+        
+        // Remove sensitive data for context
+        const { passwordHash, emailVerificationToken, passwordResetToken, ...userData } = fullUser;
         
         setUser(userData);
         setAccessToken(storedAccessToken);
@@ -95,17 +92,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setAccessToken(refreshResult.accessToken);
           
           const payload = await verifyAccessToken(refreshResult.accessToken);
-          const userData = {
-            id: payload.userId,
-            email: payload.email,
-            role: payload.role,
-            name: '',
-            createdAt: '',
-            emailVerified: true,
-            provider: 'email' as const,
-            isActive: true,
-            failedLoginAttempts: 0,
-          };
+          
+          // Get complete user data from auth service
+          const fullUser = authService.getUserById(payload.userId);
+          if (!fullUser) {
+            clearTokens();
+            setIsLoading(false);
+            return;
+          }
+          
+          // Remove sensitive data for context
+          const { passwordHash, emailVerificationToken, passwordResetToken, ...userData } = fullUser;
           
           setUser(userData);
           setRefreshTokenValue(storedRefreshToken);
@@ -215,10 +212,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateProfile = async (userData: Partial<User>) => {
-    // This would typically make an API call to update user profile
-    if (user) {
-      const updatedUser = { ...user, ...userData };
-      setUser(updatedUser);
+    if (!user) return;
+    
+    try {
+      const result = await authService.updateProfile(user.id, userData);
+      if (result.success && result.user) {
+        setUser(result.user);
+      }
+    } catch (error) {
+      console.error('Profile update error:', error);
     }
   };
 

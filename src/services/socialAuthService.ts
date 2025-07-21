@@ -32,7 +32,7 @@ export class SocialAuthService {
   /**
    * Initiates social login flow
    */
-  static async initiateSocialLogin(provider: 'google' | 'microsoft' | 'apple'): Promise<void> {
+  static async initiateSocialLogin(provider: 'google' | 'microsoft' | 'apple'): Promise<SocialLoginResponse | void> {
     try {
       // Check if we're in demo mode (for development/testing)
       const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true' || 
@@ -42,16 +42,22 @@ export class SocialAuthService {
         // In demo mode, use simulated OAuth
         const result = await OAuthClient.simulateOAuthLogin(provider);
         if (result.success && result.user) {
-          await this.handleSocialLoginSuccess(result);
+          return await this.handleSocialLoginSuccess(result);
         }
-        return;
+        return {
+          success: false,
+          error: 'Demo login failed',
+        };
       }
 
       // Production OAuth flow
       await OAuthClient.initiateLogin(provider);
     } catch (error) {
       console.error('Social login initiation error:', error);
-      throw new Error('Failed to initiate social login');
+      return {
+        success: false,
+        error: 'Failed to initiate social login',
+      };
     }
   }
 

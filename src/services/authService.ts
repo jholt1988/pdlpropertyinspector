@@ -379,6 +379,37 @@ export class AuthService {
     }
   }
 
+  /**
+   * Gets user by ID
+   */
+  getUserById(userId: string): User | undefined {
+    return this.users.get(userId);
+  }
+
+  /**
+   * Updates user profile
+   */
+  async updateProfile(userId: string, updates: Partial<User>): Promise<{ success: boolean; error?: string; user?: Omit<User, 'passwordHash'> }> {
+    try {
+      const user = this.users.get(userId);
+      if (!user) {
+        return { success: false, error: 'User not found' };
+      }
+
+      // Update user with new data
+      const updatedUser = { ...user, ...updates };
+      this.users.set(userId, updatedUser);
+      this.saveUsers();
+
+      // Return user without sensitive data
+      const { passwordHash, emailVerificationToken, passwordResetToken, ...userResponse } = updatedUser;
+      return { success: true, user: userResponse };
+    } catch (error) {
+      console.error('Profile update error:', error);
+      return { success: false, error: 'Failed to update profile' };
+    }
+  }
+
   // Helper methods
   private findUserByEmail(email: string): User | undefined {
     return Array.from(this.users.values()).find(user => user.email === email.toLowerCase());
