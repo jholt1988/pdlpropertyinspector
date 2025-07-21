@@ -7,6 +7,9 @@ declare global {
     readonly env: {
       readonly VITE_DEMO_MODE?: string;
       readonly NODE_ENV?: string;
+      readonly VITE_GOOGLE_CLIENT_ID?: string;
+      readonly VITE_MICROSOFT_CLIENT_ID?: string;
+      readonly VITE_APPLE_CLIENT_ID?: string;
     }
   }
 }
