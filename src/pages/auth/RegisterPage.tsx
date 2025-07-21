@@ -108,6 +108,7 @@ export function RegisterPage() {
   const handleAccountLinking = (email: string) => {
     setError(`An account with email ${email} already exists. Please use the login page to sign in.`);
   };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -328,7 +329,6 @@ export function RegisterPage() {
               />
               <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
                 I agree to the{' '}
-                <a href="#" className="text-blue-600 hover:text-blue-500">
                 <a href="#" className="text-keycheck-primary hover:text-keycheck-secondary">
                   Terms of Service
                 </a>{' '}
