@@ -113,7 +113,6 @@ export function HomePage() {
                 className="card hover:bg-keycheck-light transition"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                   <div className="w-12 h-12 bg-keycheck-light rounded-lg flex items-center justify-center">
                     <CheckCircle className="text-keycheck-primary" size={24} />
                   </div>
@@ -132,7 +131,6 @@ export function HomePage() {
               >
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
                     <AlertTriangle className="text-orange-600" size={24} />
                   </div>
                   <div>
@@ -149,9 +147,7 @@ export function HomePage() {
                 className="card hover:bg-success-50 transition"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                   <div className="w-12 h-12 bg-success-50 rounded-lg flex items-center justify-center">
-                    <Clock className="text-green-600" size={24} />
                     <Clock className="text-success" size={24} />
                   </div>
                   <div>
