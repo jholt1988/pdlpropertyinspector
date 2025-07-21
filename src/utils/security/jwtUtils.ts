@@ -79,7 +79,7 @@ export async function verifyAccessToken(token: string): Promise<TokenPayload> {
       audience: JWT_AUDIENCE,
     });
 
-    return payload as TokenPayload;
+    return payload as unknown as TokenPayload;
   } catch (error) {
     throw new Error('Invalid or expired token');
   }
@@ -97,7 +97,7 @@ export async function verifyRefreshToken(token: string): Promise<RefreshTokenPay
       audience: JWT_AUDIENCE,
     });
 
-    return payload as RefreshTokenPayload;
+    return payload as unknown as RefreshTokenPayload;
   } catch (error) {
     throw new Error('Invalid or expired refresh token');
   }
