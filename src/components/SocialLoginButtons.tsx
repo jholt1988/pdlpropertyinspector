@@ -1,6 +1,15 @@
 import { useState } from 'react';
 import { SocialAuthService } from '../services/socialAuthService';
-import { useAuth } from '../contexts/AuthContext';
+
+// TypeScript declaration for import.meta.env
+declare global {
+  interface ImportMeta {
+    readonly env: {
+      readonly VITE_DEMO_MODE?: string;
+      readonly NODE_ENV?: string;
+    }
+  }
+}
 
 interface SocialLoginButtonsProps {
   onSuccess?: () => void;
