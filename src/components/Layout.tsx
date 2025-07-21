@@ -38,7 +38,7 @@ export function Layout({ children }: LayoutProps) {
       <div className="bg-white border-b border-gray-200 px-4 py-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <KeyCheckLogo size="sm" />
+            <img src='image.png'size="sm" />
             <div>
               <p className="text-sm font-medium text-gray-900">{user?.name}</p>
               <p className="text-xs text-gray-500">{user?.role?.replace('_', ' ')}</p>
