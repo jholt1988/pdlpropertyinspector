@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, Building, Phone, AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { SocialLoginButtons } from '../../components/SocialLoginButtons';
+import { KeyCheckLogo } from '../../components/KeyCheckLogo';
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -111,8 +112,11 @@ export function RegisterPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900">Create Account</h2>
-          <p className="mt-2 text-sm text-gray-600">Join Property Inspector today</p>
+          <div className="flex justify-center mb-4">
+            <KeyCheckLogo size="lg" />
+          </div>
+          <h2 className="text-3xl font-bold text-keycheck-primary">Join Key-Check</h2>
+          <p className="mt-2 text-sm text-gray-600">Create your property inspection account</p>
         </div>
       </div>
 
@@ -325,10 +329,11 @@ export function RegisterPage() {
               <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
                 I agree to the{' '}
                 <a href="#" className="text-blue-600 hover:text-blue-500">
+                <a href="#" className="text-keycheck-primary hover:text-keycheck-secondary">
                   Terms of Service
                 </a>{' '}
                 and{' '}
-                <a href="#" className="text-blue-600 hover:text-blue-500">
+                <a href="#" className="text-keycheck-primary hover:text-keycheck-secondary">
                   Privacy Policy
                 </a>
               </label>
@@ -357,7 +362,7 @@ export function RegisterPage() {
               Already have an account?{' '}
               <Link
                 to="/auth/login"
-                className="font-medium text-blue-600 hover:text-blue-500"
+                className="font-medium text-keycheck-primary hover:text-keycheck-secondary"
               >
                 Sign in
               </Link>

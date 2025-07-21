@@ -72,7 +72,7 @@ export function HomePage() {
             <CanCreate resource="inspection">
               <Link
                 to="/inspections/new"
-                className="btn btn-primary"
+                className="btn btn-primary bg-keycheck-primary hover:bg-keycheck-primary"
               >
                 <Plus size={20} />
                 New
@@ -110,11 +110,12 @@ export function HomePage() {
             <CanCreate resource="inspection">
               <Link
                 to="/inspections/new?type=move-in"
-                className="card hover:bg-blue-50 transition"
+                className="card hover:bg-keycheck-light transition"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <CheckCircle className="text-blue-600" size={24} />
+                  <div className="w-12 h-12 bg-keycheck-light rounded-lg flex items-center justify-center">
+                    <CheckCircle className="text-keycheck-primary" size={24} />
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">Move-in Inspection</h3>
@@ -131,6 +132,7 @@ export function HomePage() {
               >
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
                     <AlertTriangle className="text-orange-600" size={24} />
                   </div>
                   <div>
@@ -144,11 +146,13 @@ export function HomePage() {
             <CanCreate resource="inspection">
               <Link
                 to="/inspections/new?type=routine"
-                className="card hover:bg-green-50 transition"
+                className="card hover:bg-success-50 transition"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                  <div className="w-12 h-12 bg-success-50 rounded-lg flex items-center justify-center">
                     <Clock className="text-green-600" size={24} />
+                    <Clock className="text-success" size={24} />
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">Routine Check</h3>
@@ -179,7 +183,7 @@ export function HomePage() {
         <div>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-gray-900">Recent Inspections</h2>
-            <Link to="/inspections" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+            <Link to="/inspections" className="text-keycheck-primary hover:text-keycheck-secondary text-sm font-medium">
               See All
             </Link>
           </div>

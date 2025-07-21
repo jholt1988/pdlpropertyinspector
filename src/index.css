@@ -10,7 +10,7 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   line-height: 1.5;
   color: #1f2937;
-  background-color: #f9fafb;
+  background-color: #f7f9f8;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -60,12 +60,12 @@ a {
 }
 
 .btn-primary {
-  background-color: #2563eb;
+  background-color: #5A6B5D;
   color: white;
 }
 
 .btn-primary:hover {
-  background-color: #1d4ed8;
+  background-color: #4A5A4D;
 }
 
 .btn-secondary {
@@ -88,12 +88,12 @@ a {
 }
 
 .btn-success {
-  background-color: #059669;
+  background-color: #6B8A73;
   color: white;
 }
 
 .btn-success:hover {
-  background-color: #047857;
+  background-color: #5A7A63;
 }
 
 .card {
@@ -126,8 +126,8 @@ a {
 }
 
 .form-input:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: #5A6B5D;
+  box-shadow: 0 0 0 3px rgba(90, 107, 93, 0.1);
 }
 
 .form-textarea {
@@ -240,12 +240,12 @@ a {
   color: #111827;
 }
 
-.text-blue-600 {
-  color: #2563eb;
+.text-primary {
+  color: #5A6B5D;
 }
 
-.text-green-600 {
-  color: #059669;
+.text-success {
+  color: #6B8A73;
 }
 
 .text-red-600 {
@@ -256,12 +256,12 @@ a {
   color: #ea580c;
 }
 
-.bg-blue-50 {
-  background-color: #eff6ff;
+.bg-primary-50 {
+  background-color: #f0f2f1;
 }
 
-.bg-green-50 {
-  background-color: #ecfdf5;
+.bg-success-50 {
+  background-color: #f1f4f2;
 }
 
 .bg-red-50 {
@@ -406,8 +406,8 @@ a {
   background-color: #f9fafb;
 }
 
-.hover\:bg-blue-50:hover {
-  background-color: #eff6ff;
+.hover\:bg-primary-50:hover {
+  background-color: #f0f2f1;
 }
 
 .focus\:outline-none:focus {
@@ -415,5 +415,38 @@ a {
 }
 
 .focus\:ring-2:focus {
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.5);
+  box-shadow: 0 0 0 2px rgba(90, 107, 93, 0.5);
+}
+
+/* Key-Check specific color classes */
+.text-keycheck-primary {
+  color: #5A6B5D;
+}
+
+.text-keycheck-secondary {
+  color: #9DB5A6;
+}
+
+.bg-keycheck-primary {
+  background-color: #5A6B5D;
+}
+
+.bg-keycheck-secondary {
+  background-color: #9DB5A6;
+}
+
+.bg-keycheck-light {
+  background-color: #f0f2f1;
+}
+
+.border-keycheck-primary {
+  border-color: #5A6B5D;
+}
+
+.hover\:bg-keycheck-primary:hover {
+  background-color: #5A6B5D;
+}
+
+.hover\:bg-keycheck-light:hover {
+  background-color: #f0f2f1;
 }
