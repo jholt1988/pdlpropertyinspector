@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { SocialLoginButtons } from '../../components/SocialLoginButtons';
+import { KeyCheckLogo } from '../../components/KeyCheckLogo';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -67,15 +68,19 @@ export function LoginPage() {
     setError(`An account with email ${email} already exists. Please enter your password below to link your social account, or use email login.`);
   };
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900">Property Inspector</h2>
-          <p className="mt-2 text-sm text-gray-600">Sign in to your account</p>
+          <div className="flex justify-center mb-4">
+            <img src='/image.png' alt="Key-Check Logo" style={{width: '40px', height: '40px'}} />
+          </div>
+          <h2 className="text-3xl font-bold text-keycheck-primary">Key-Check</h2>
+          <p className="mt-2 text-sm text-gray-600">Property Inspection Platform</p>
+          <p className="text-sm text-gray-500">Sign in to your account</p>
         </div>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+      <div className="mt-8 w-full sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           {error && (
             <div className="mb-4 bg-red-50 border border-red-200 rounded-md p-4">
@@ -240,7 +245,7 @@ export function LoginPage() {
               Don't have an account?{' '}
               <Link
                 to="/auth/register"
-                className="font-medium text-blue-600 hover:text-blue-500"
+                className="font-medium text-keycheck-primary hover:text-keycheck-secondary"
               >
                 Sign up
               </Link>

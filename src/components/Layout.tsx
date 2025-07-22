@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, ClipboardList, FileText, User, LogOut } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { KeyCheckLogo } from './KeyCheckLogo';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -37,9 +38,7 @@ export function Layout({ children }: LayoutProps) {
       <div className="bg-white border-b border-gray-200 px-4 py-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-              <User className="text-white" size={16} />
-            </div>
+            <img src='../../public/image.png'size="sm" />
             <div>
               <p className="text-sm font-medium text-gray-900">{user?.name}</p>
               <p className="text-xs text-gray-500">{user?.role?.replace('_', ' ')}</p>
@@ -72,7 +71,7 @@ export function Layout({ children }: LayoutProps) {
                 to={item.href}
                 className={`flex flex-col items-center py-2 px-3 rounded-lg transition ${
                   active
-                    ? 'text-blue-600 bg-blue-50'
+                    ? 'text-keycheck-primary bg-keycheck-light'
                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                 }`}
               >
