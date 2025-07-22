@@ -114,14 +114,14 @@ export function RegisterPage() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <KeyCheckLogo size="md "/>
+            <img src='/image.png' alt="Key-Check Logo" style={{width: '48px', height: '48px'}} />
           </div>
           <h2 className="text-3xl font-bold text-keycheck-primary">Join Key-Check</h2>
           <p className="mt-2 text-sm text-gray-600">Create your property inspection account</p>
         </div>
       </div>
 
-      <div className="mt-8 flex items-center  justify center sm:mx-auto sm:w-full sm:max-w-md">
+      <div className="mt-8 flex items-center justify-center sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           {error && (
             <div className="mb-4 bg-red-50 border border-red-200 rounded-md p-4">
