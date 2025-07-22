@@ -72,7 +72,7 @@ export function LoginPage() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <img src='../../public/image.png' />
+            <img src='../../public/image.png'/>
           <h2 className="text-3xl font-bold text-keycheck-primary">Key-Check</h2>
           <p className="mt-2 text-sm text-gray-600">Property Inspection Platform</p>
           <p className="text-sm text-gray-500">Sign in to your account</p>
@@ -249,6 +249,9 @@ export function LoginPage() {
                 Sign up
               </Link>
             </p>
-          </div
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
