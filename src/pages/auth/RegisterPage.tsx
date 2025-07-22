@@ -110,8 +110,8 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50  flex-auto justify-center py-12 px-4">
-      <div className="w-60 max-w-md mx-auto flex flex-col flex-wrap space-y-8">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
+      <div className="w-full max-w-md mx-auto flex flex-col space-y-8">
         {/* Logo and Header Section */}
         <div className="text-center flex flex-col space-y-4">
           <div className="flex justify-center mb-4">
@@ -124,7 +124,7 @@ export function RegisterPage() {
         </div>
 
         {/* Main Form Container */}
-        <div className="bg-white py-8 px-6 shadow-lg rounded-lg">
+        <div className="bg-white py-8 px-6 shadow-lg rounded-lg w-full">
           <div className="flex flex-col space-y-6">
             {/* Error Message */}
             {error && (
