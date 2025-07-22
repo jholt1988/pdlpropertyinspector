@@ -12,7 +12,18 @@ export function KeyCheckLogo({ size = 'md', className = '' }: KeyCheckLogoProps)
 
   return (
     <div className={`${sizeClasses[size]} ${className} relative`}>
-      <svg viewBox="0 0 100 100" className="w-full h-full">
+
+       <img src='/image.png'  />
+
+
+
+
+
+
+
+
+      
+      {/* <svg viewBox="0 0 100 100" className="w-full h-full">
         {/* Circular background with gradient */}
         <defs>
           <linearGradient id="keyCheckGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -23,7 +34,7 @@ export function KeyCheckLogo({ size = 'md', className = '' }: KeyCheckLogoProps)
         
         {/* Background circle */}
         <circle cx="50" cy="50" r="48" fill="url(#keyCheckGradient)" stroke="#2D3E30" strokeWidth="2"/>
-        
+         */}
         {/* Keyhole shape */}
         <g transform="translate(50, 50)">
           {/* Key circle */}
