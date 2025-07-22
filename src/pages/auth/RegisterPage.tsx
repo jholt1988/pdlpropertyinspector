@@ -110,8 +110,8 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex  flex-col  justify-center py-12 px-4">
-      <div className="w-full max-w-md mx-auto flex space-y-8">
+    <div className="min-h-screen bg-gray-50 border-box  justify-center py-12 px-4">
+      <div className="w-full max-w-md mx-auto flex-col flex-nowrap space-y-8">
         {/* Logo and Header Section */}
         <div className="text-center flex flex-col space-y-4">
           <div className="flex justify-center mb-4">
