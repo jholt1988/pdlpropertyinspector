@@ -110,12 +110,12 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex  flex-col items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-gray-50 flex  flex-col  justify-center py-12 px-4">
       <div className="w-full max-w-md mx-auto flex space-y-8">
         {/* Logo and Header Section */}
         <div className="text-center flex flex-col space-y-4">
           <div className="flex justify-center mb-4">
-            <img src='/image.png' alt="Key-Check Logo" style={{width: '40px', height: '40px'}} />
+            <img src='/image.png' alt="Key-Check Logo" style={{width: '60px', height: '80px'}} />
           </div>
           <div className="flex flex-col space-y-2">
             <h2 className="text-3xl font-bold text-keycheck-primary">Join Key-Check</h2>
