@@ -121,7 +121,7 @@ export function RegisterPage() {
             <h2 className="text-3xl font-bold text-keycheck-primary">Join Key-Check</h2>
             <p className="text-sm text-gray-600">Create your property inspection account</p>
           </div>
-        </div>
+        
 
         {/* Main Form Container */}
         <div className="bg-white py-8 px-6 shadow-lg rounded-lg w-full">
@@ -388,5 +388,6 @@ export function RegisterPage() {
         </div>
       </div>
     </div>
+    </div>  
   );
 }
