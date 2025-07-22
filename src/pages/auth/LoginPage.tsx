@@ -72,15 +72,14 @@ export function LoginPage() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <KeyCheckLogo size="lg" />
-          </div>
+            <img src='../../public/image.png' sizes=
           <h2 className="text-3xl font-bold text-keycheck-primary">Key-Check</h2>
           <p className="mt-2 text-sm text-gray-600">Property Inspection Platform</p>
           <p className="text-sm text-gray-500">Sign in to your account</p>
         </div>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+      <div className="mt-8 flex items-center sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           {error && (
             <div className="mb-4 bg-red-50 border border-red-200 rounded-md p-4">
