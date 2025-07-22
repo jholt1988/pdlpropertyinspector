@@ -13,6 +13,6 @@ export function KeyCheckLogo({ size = 'md', className = '' }: KeyCheckLogoProps)
   return (
     <div className={`${sizeClasses[size]} ${className} relative`}>
 
-       <img src='/image.png' />
+       <img src='/image.png'  />
     </div>
           )}
