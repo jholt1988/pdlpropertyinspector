@@ -249,8 +249,6 @@ export function LoginPage() {
                 Sign up
               </Link>
             </p>
-          </div>
-        </div>
-      
+          </div
   );
 }
