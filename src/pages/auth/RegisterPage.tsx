@@ -114,7 +114,7 @@ export function RegisterPage() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <KeyCheckLogo size="lg" />
+            <KeyCheckLogo size="md />
           </div>
           <h2 className="text-3xl font-bold text-keycheck-primary">Join Key-Check</h2>
           <p className="mt-2 text-sm text-gray-600">Create your property inspection account</p>
