@@ -68,11 +68,11 @@ export function LoginPage() {
     setError(`An account with email ${email} already exists. Please enter your password below to link your social account, or use email login.`);
   };
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <img src='/image.png' alt="Key-Check Logo" />
+            <img src='/image.png' alt="Key-Check Logo" style={{width: '40px', height: '40px'}} />
           </div>
           <h2 className="text-3xl font-bold text-keycheck-primary">Key-Check</h2>
           <p className="mt-2 text-sm text-gray-600">Property Inspection Platform</p>
@@ -80,7 +80,7 @@ export function LoginPage() {
         </div>
       </div>
 
-      <div className="mt-8 flex items-center sm:mx-auto sm:w-full sm:max-w-md">
+      <div className="mt-8 w-full sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           {error && (
             <div className="mb-4 bg-red-50 border border-red-200 rounded-md p-4">
