@@ -139,7 +139,7 @@ export function RegisterPage() {
             )}
 
             {/* Social Login Section */}
-            <div className="flex flex-col space-y-4">
+            <div className="flex flex-col items-center justify-center space-y-4">
               <SocialLoginButtons 
                 onSuccess={handleSocialLoginSuccess}
                 onError={handleSocialLoginError}
