@@ -75,8 +75,12 @@ export class RateLimiter {
     validAttempts.push({ timestamp: now, success });
     this.attempts.set(identifier, validAttempts);
 
-    const remaining = Math.max(0, this.rules.maxAttempts - failedAttempts.length - 1);
-    const resetTime = windowStart + this.rules.windowMs;
+    const failedAttemptsAfter = validAttempts.filter(attempt => !attempt.success);
+    const remaining = Math.max(0, this.rules.maxAttempts - failedAttemptsAfter.length);
+    const resetTime =
+      validAttempts.length > 0
+        ? validAttempts[0].timestamp + this.rules.windowMs
+        : now + this.rules.windowMs;
 
     return {
       allowed: true,
@@ -120,7 +124,10 @@ export class RateLimiter {
     const failedAttempts = validAttempts.filter(attempt => !attempt.success);
 
     const remaining = Math.max(0, this.rules.maxAttempts - failedAttempts.length);
-    const resetTime = windowStart + this.rules.windowMs;
+    const resetTime =
+      validAttempts.length > 0
+        ? validAttempts[0].timestamp + this.rules.windowMs
+        : now + this.rules.windowMs;
 
     return {
       allowed: failedAttempts.length < this.rules.maxAttempts,
