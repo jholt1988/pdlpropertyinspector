@@ -63,7 +63,7 @@ export function SocialLoginButtons({ onSuccess, onError, onAccountLinking }: Soc
       <button
         onClick={() => handleSocialLogin('google')}
         disabled={isLoading}
-        className="w-half flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
+        className="w-1/2 flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
       >
         {isProviderLoading('google') ? (
           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
@@ -95,7 +95,7 @@ export function SocialLoginButtons({ onSuccess, onError, onAccountLinking }: Soc
       <button
         onClick={() => handleSocialLogin('microsoft')}
         disabled={isLoading}
-        className="w-half flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
+        className="w-1/2 flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
       >
         {isProviderLoading('microsoft') ? (
           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
@@ -115,7 +115,7 @@ export function SocialLoginButtons({ onSuccess, onError, onAccountLinking }: Soc
       <button
         onClick={() => handleSocialLogin('apple')}
         disabled={isLoading}
-        className="w-half flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-black text-xs font-medium text-white hover:bg-gray-800 transition disabled:opacity-50"
+        className="w-1/2 flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-black text-xs font-medium text-white hover:bg-gray-800 transition disabled:opacity-50"
       >
         {isProviderLoading('apple') ? (
           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>

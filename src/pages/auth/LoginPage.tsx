@@ -102,7 +102,7 @@ export function LoginPage() {
             />
           </div>
 
-          <div className="w-half relative mb-6">
+          <div className="w-1/2 relative mb-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-100 border-t border-gray-300" />
             </div>
