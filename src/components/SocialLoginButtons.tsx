@@ -59,7 +59,7 @@ export function SocialLoginButtons({ onSuccess, onError, onAccountLinking }: Soc
   const isProviderLoading = (provider: string) => isLoading && loadingProvider === provider;
 
   return (
-    <div className="space-y-2">
+    <div className="flex justify-center space-y-2">
       <button
         onClick={() => handleSocialLogin('google')}
         disabled={isLoading}

@@ -37,9 +37,11 @@ function App() {
     <AuthProvider>
       <StorageProvider>
         <Router>
+      
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
               {/* Public routes */}
+           
               <Route path="/auth/login" element={<LoginPage />} />
               <Route path="/auth/register" element={<RegisterPage />} />
               <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
@@ -47,7 +49,7 @@ function App() {
               <Route path="/auth/callback/google" element={<SocialCallbackPage />} />
               <Route path="/auth/callback/microsoft" element={<SocialCallbackPage />} />
               <Route path="/auth/callback/apple" element={<SocialCallbackPage />} />
-              
+            
               {/* Protected routes */}
               <Route path="/*" element={
                 <ProtectedRoute>

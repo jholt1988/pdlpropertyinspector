@@ -68,19 +68,19 @@ export function LoginPage() {
     setError(`An account with email ${email} already exists. Please enter your password below to link your social account, or use email login.`);
   };
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+    <div className="min-h-screen bg-green-400 py-12 px-4 flex flex-col items-center justify-start space-y-6">
+      <div className="w-full max-w-md text-center flex justify-center space-y-2">
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <KeyCheckLogo size="sm" />
+            <KeyCheckLogo />
+         
           </div>
-          <h2 className="text-3xl font-bold text-keycheck-primary">Key-Check</h2>
-          <p className="mt-2 text-sm text-gray-600">Property Inspection Platform</p>
-          <p className="text-sm text-gray-500">Sign in to your account</p>
+          <p className="mb--2 text-sm  text-green-600">Property Inspection Platform</p>
+          <p className="text-sm  text-gray-500">Sign in to your account</p>
         </div>
       </div>
 
-      <div className="mt-8 w-full sm:mx-auto sm:w-full sm:max-w-md">
+      <div className="mt-4 w-full max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           {error && (
             <div className="mb-4 bg-red-50 border border-red-200 rounded-md p-4">
@@ -94,7 +94,7 @@ export function LoginPage() {
           )}
 
           {/* Social Login Buttons */}
-          <div className="mb-6">
+          <div className=" mb-6">
             <SocialLoginButtons 
               onSuccess={handleSocialLoginSuccess}
               onError={handleSocialLoginError}
@@ -102,16 +102,16 @@ export function LoginPage() {
             />
           </div>
 
-          <div className="relative mb-6">
+          <div className="w-half relative mb-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
+              <div className="w-100 border-t border-gray-300" />
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="px-2 bg-white text-gray-500">Or continue with email</span>
             </div>
           </div>
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6 " onSubmit={handleSubmit}>
             <div>
               <label className="form-label">Email address</label>
               <div className="relative">

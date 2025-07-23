@@ -111,18 +111,18 @@ export function RegisterPage() {
 
   return (
     
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="bg-white py-8 px-6 shadow-lg rounded-lg w-full max-w-md">
+    <div className="min-h-screen w-100 bg-gray-50  justify-center py-12 px-4">
+      <div className="bg-white py-8 px-6 shadow-lg flex-col flex-nowrap rounded-lg w-full">
     <div className="flex flex-col space-y-6">
       <div className=" max-w-md mx-auto space-y-8">
         {/* Logo and Header Section */}
         <div className="text-center space-y-4">
-          <div className=" justify-center mb-4">
+          <div className=" flex justify-center mb-4">
             <KeyCheckLogo />
           </div>
-          <div className="flex flex-col space-y-2">
-            <h2 className="text-3xl font-bold text-keycheck-primary">Join Key-Check</h2>
-            <p className="text-sm text-gray-600">Create your property inspection account</p>
+          <div className="flex  justify-center flex-col space-y-2">
+            <h2 className="text-3xl justify-center font-bold text-keycheck-primary">Join Key-Check</h2>
+            <p className="text-sm justify-center text-gray-600">Create your property inspection account</p>
           </div>
         
 
