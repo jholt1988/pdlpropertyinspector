@@ -225,8 +225,19 @@ export function HomePage() {
               </CanCreate>
             </div>
           )}
+          {/*Repair Projects and Estimates*/}
+          <div className='card text-center py-12'>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No repair projects yet</h3>
+              <p className="text-gray-600 mb-6">Create your first repair project to get started</p>
+            
+                <Link to="/projects" className="btn btn-primary">
+                  <Plus size={20} />
+                  Create New Repair Project 
+                </Link>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    
   );
 }

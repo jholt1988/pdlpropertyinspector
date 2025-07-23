@@ -5,6 +5,7 @@ import { StorageProvider } from './contexts/StorageContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Layout } from './components/Layout';
 import { EmailVerificationBanner } from './components/EmailVerificationBanner';
+import ProjectPage from './pages/ProjectPage';
 
 // Lazy load page components for code splitting
 const HomePage = lazy(() => import('./pages/HomePage').then(module => ({ default: module.HomePage })));
@@ -65,6 +66,7 @@ function App() {
                         <Route path="/reports" element={<ReportsPage />} />
                         <Route path="/reports/:id" element={<ReportDetailPage />} />
                         <Route path="/profile" element={<ProfilePage />} />
+                        <Route path='/projects' element={<ProjectPage/>} />
                       </Routes>
                     </Suspense>
                   </Layout>

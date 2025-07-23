@@ -80,3 +80,64 @@ export interface Report {
   generatedAt: string;
   pdfPath: string;
 }
+
+export interface InventoryItem {
+  itemId: string;
+  itemName: string;
+  category: string;
+  currentCondition: 'Excellent' | 'Good' | 'Fair' | 'Poor' | 'Damaged' | 'Non-functional';
+  purchaseDate: string;
+  lastMaintenanceDate?: string;
+  originalCost: number;
+  currentMarketValue?: number;
+  location?: string;
+  description?: string;
+}
+
+export interface FlaggedItem extends InventoryItem {
+  flagReason: 'condition' | 'lifecycle' | 'maintenance';
+  flagDetails: string;
+  recommendation: 'fix' | 'replace';
+  estimatedRepairCost?: number;
+  estimatedReplacementCost?: number;
+  repairSteps?: string[];
+  requiredResources?: string[];
+  estimatedTimeline?: string;
+  costBreakdown?: {
+    labor?: number;
+    parts?: number;
+    disposal?: number;
+    installation?: number;
+  };
+}
+
+export interface AnalysisResult {
+  totalItems: number;
+  flaggedItems: FlaggedItem[];
+  itemsToFix: FlaggedItem[];
+  itemsToReplace: FlaggedItem[];
+  totalEstimatedCost: number;
+  generatedDate: string;
+  summary: {
+    conditionFlags: number;
+    lifecycleFlags: number;
+    maintenanceFlags: number;
+  };
+}
+
+export interface SystemConfig {
+  repairThreshold: number;
+  laborRates: {
+    general: number;
+    electrical: number;
+    plumbing: number;
+    hvac: number;
+    specialized: number;
+  };
+  maintenanceThresholds: {
+    [category: string]: number; // months
+  };
+  expectedLifespans: {
+    [category: string]: number; // months
+  };
+}
