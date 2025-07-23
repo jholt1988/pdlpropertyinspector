@@ -174,10 +174,3 @@ export const passwordResetRateLimiter = new RateLimiter({
   maxAttempts: 3, // 3 password reset attempts per hour
   blockDurationMs: 60 * 60 * 1000, // Block for 1 hour
 });
-
-// Cleanup expired entries every 5 minutes
-setInterval(() => {
-  loginRateLimiter.cleanup();
-  registrationRateLimiter.cleanup();
-  passwordResetRateLimiter.cleanup();
-}, 5 * 60 * 1000);

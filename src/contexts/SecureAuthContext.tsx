@@ -45,14 +45,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     checkAuthStatus();
     
-    // Set up automatic token refresh
-    const refreshInterval = setInterval(() => {
-      if (refreshTokenValue) {
-        refreshToken();
+    // Set up automatic token refresh with stable function reference
+    let refreshInterval: NodeJS.Timeout | null = null;
+    
+    const setupTokenRefresh = () => {
+      if (refreshTokenValue && !refreshInterval) {
+        refreshInterval = setInterval(() => {
+          refreshToken();
+        }, 10 * 60 * 1000); // Refresh every 10 minutes
       }
-    }, 10 * 60 * 1000); // Refresh every 10 minutes
+    };
+    
+    setupTokenRefresh();
 
-    return () => clearInterval(refreshInterval);
+    return () => {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
+      }
+    };
   }, [refreshTokenValue]);
 
   const checkAuthStatus = async () => {
