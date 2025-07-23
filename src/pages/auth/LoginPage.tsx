@@ -71,12 +71,12 @@ export function LoginPage() {
     <div className="min-h-screen bg-green-400 py-12 px-4 flex flex-col items-center justify-start space-y-6">
       <div className="w-full max-w-md text-center flex justify-center space-y-2">
         <div className="text-center">
-          <div className="flex justify-center mb-4">
+          <div className="flex justify-center ">
             <KeyCheckLogo />
          
           </div>
-          <p className="mb--2 text-sm  text-green-600">Property Inspection Platform</p>
-          <p className="text-sm  text-gray-500">Sign in to your account</p>
+          <p className="mb-2 text-xl text-green-600">Property Inspection Platform</p>
+          <p className="text-sm text-black">Sign in to your account</p>
         </div>
       </div>
 
