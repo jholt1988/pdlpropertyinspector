@@ -49,6 +49,7 @@ function App() {
               <Route path="/auth/callback/google" element={<SocialCallbackPage />} />
               <Route path="/auth/callback/microsoft" element={<SocialCallbackPage />} />
               <Route path="/auth/callback/apple" element={<SocialCallbackPage />} />
+              <Route path='/pages/microsoft-identity-association.json' />
             
               {/* Protected routes */}
               <Route path="/*" element={

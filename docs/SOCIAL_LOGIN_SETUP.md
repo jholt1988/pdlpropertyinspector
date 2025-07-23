@@ -38,8 +38,8 @@ VITE_DEMO_MODE=true
    - `http://localhost:5173/auth/callback/google` (for development)
 
 ```bash
-VITE_GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
+VITE_GOOGLE_CLIENT_ID=14879693490-ipr9rrdbe8vb1tlq7rhmmhd05edp8tod.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=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t
 ```
 
 ### 2. Microsoft OAuth Setup
@@ -57,8 +57,8 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
    - `profile`
 
 ```bash
-VITE_MICROSOFT_CLIENT_ID=your-microsoft-client-id
-MICROSOFT_CLIENT_SECRET=your-microsoft-client-secret
+VITE_MICROSOFT_CLIENT_ID=y0594a7d5-4a99-4b5f-86a2-65865b3123a6
+MICROSOFT_CLIENT_SECRET=oML8Q~TVXyE4noK4TOJEvb_iHvWoKXnCNAKxpb02t
 ```
 
 ### 3. Apple Sign In Setup
