@@ -376,6 +376,10 @@ a {
   width: 100%;
 }
 
+.w-1\/2 {
+  width: 50%;
+}
+
 .h-full {
   height: 100%;
 }
