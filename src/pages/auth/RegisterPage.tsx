@@ -115,7 +115,7 @@ export function RegisterPage() {
         {/* Logo and Header Section */}
         <div className="text-center flex flex-col space-y-4">
           <div className="flex justify-center mb-4">
-            <img src='/image.png' alt="Key-Check Logo" style={{width: '60px', height: '80px'}} />
+            <img src='/image_119_100.png' alt="Key-Check Logo" style={{width:'119px',height:'100px'}} />
           </div>
           <div className="flex flex-col space-y-2">
             <h2 className="text-3xl font-bold text-keycheck-primary">Join Key-Check</h2>
