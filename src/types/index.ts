@@ -11,7 +11,20 @@ export interface Property {
 export interface Room {
   id: string;
   name: string;
-  type: 'bedroom' | 'bathroom' | 'kitchen' | 'living' | 'dining' | 'utility' | 'other';
+  type:
+    | 'bedroom'
+    | 'bathroom'
+    | 'kitchen'
+    | 'living_room'
+    | 'dining_room'
+    | 'utility_room'
+    | 'exterior_building'
+    | 'exterior_landscaping'
+    | 'exterior_parking'
+    | 'common_hallways'
+    | 'common_laundry'
+    | 'common_lobby'
+    | 'other';
   checklistItems: ChecklistItem[];
 }
 
