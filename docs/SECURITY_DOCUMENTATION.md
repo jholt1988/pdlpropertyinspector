@@ -143,7 +143,8 @@ This document outlines the comprehensive security measures implemented in the Pr
 
 ### 5. Brute Force Attacks
 - **Protection**: Rate limiting and account locking
-- **Implementation**: Progressive delays and temporary account locks
+- **Implementation**: Simple blocking after reaching the configured `maxAttempts`.
+  No progressive delay is currently implemented.
 
 ### 6. Timing Attacks
 - **Protection**: Consistent timing for authentication operations
