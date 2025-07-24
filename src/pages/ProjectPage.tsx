@@ -5,12 +5,16 @@ import DataInput from '../components/RepairPlan/DataInput';
 import AnalysisResults from '../components/RepairPlan/AnalysisResults';
 import ReportGenerator from '../components/RepairPlan/ReportGenerator';
 import SystemSettings from '../components/RepairPlan/SystemSettings';
-import { InventoryItem, AnalysisResult, SystemConfig } from '../types';
+import { InventoryItem, AnalysisResult, SystemConfig, Inspection, RepairPlan } from '../types';
+import { useStorage } from '../contexts/StorageContext';
+import { generateUniqueId } from '../utils/idGenerator';
 
 function ProjectPage() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'input' | 'analysis' | 'report' | 'settings'>('dashboard');
   const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
   const [analysisResults, setAnalysisResults] = useState<AnalysisResult | null>(null);
+  const [currentInspection, setCurrentInspection] = useState<Inspection | null>(null);
+  const { saveRepairPlan } = useStorage();
   const [systemConfig, setSystemConfig] = useState<SystemConfig>({
     repairThreshold: 0.6,
     laborRates: {
@@ -36,6 +40,24 @@ function ProjectPage() {
     }
   });
 
+  const handleSavePlan = async () => {
+    if (!analysisResults) {
+      alert('Run analysis before saving the plan');
+      return;
+    }
+    const plan: RepairPlan = {
+      id: generateUniqueId('plan_'),
+      propertyId: currentInspection?.propertyId || 'unknown',
+      unitNumber: currentInspection?.unitNumber,
+      inspectionId: currentInspection?.id,
+      inventoryData,
+      analysisResults,
+      createdAt: new Date().toISOString(),
+    };
+    await saveRepairPlan(plan);
+    alert('Repair plan saved');
+  };
+
   const navigation = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'input', label: 'Data Input', icon: Database },
@@ -49,16 +71,17 @@ function ProjectPage() {
       case 'dashboard':
         return <Dashboard inventoryData={inventoryData} analysisResults={analysisResults} />;
       case 'input':
-        return <DataInput 
-          inventoryData={inventoryData} 
-          setInventoryData={setInventoryData} 
+        return <DataInput
+          inventoryData={inventoryData}
+          setInventoryData={setInventoryData}
           setAnalysisResults={setAnalysisResults}
           systemConfig={systemConfig}
+          onInspectionImported={setCurrentInspection}
         />;
       case 'analysis':
         return <AnalysisResults analysisResults={analysisResults} />;
       case 'report':
-        return <ReportGenerator analysisResults={analysisResults} />;
+        return <ReportGenerator analysisResults={analysisResults} onSavePlan={handleSavePlan} />;
       case 'settings':
         return <SystemSettings config={systemConfig} setConfig={setSystemConfig} />;
       default:
