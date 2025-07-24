@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Upload, Plus, FileText, Database, Trash2 } from 'lucide-react';
-import { InventoryItem, SystemConfig, AnalysisResult } from '../../types';
+import { InventoryItem, SystemConfig, AnalysisResult, Inspection } from '../../types';
 import { analyzeInventory } from '../../utils/analysisEngine';
 import { useStorage } from '../../contexts/StorageContext';
 import { inspectionToInventoryItems } from '../../utils/inspectionConverter';
@@ -10,13 +10,15 @@ interface DataInputProps {
   setInventoryData: (data: InventoryItem[]) => void;
   setAnalysisResults: (results: AnalysisResult) => void;
   systemConfig: SystemConfig;
+  onInspectionImported?: (inspection: Inspection) => void;
 }
 
-const DataInput: React.FC<DataInputProps> = ({ 
-  inventoryData, 
-  setInventoryData, 
+const DataInput: React.FC<DataInputProps> = ({
+  inventoryData,
+  setInventoryData,
   setAnalysisResults,
-  systemConfig
+  systemConfig,
+  onInspectionImported
 }) => {
   const [inputMethod, setInputMethod] = useState<'csv' | 'json' | 'manual'>('csv');
   const [newItem, setNewItem] = useState<Partial<InventoryItem>>({
@@ -132,6 +134,9 @@ const DataInput: React.FC<DataInputProps> = ({
     }
 
     setInventoryData([...inventoryData, ...items]);
+    if (onInspectionImported) {
+      onInspectionImported(inspection);
+    }
     setSelectedInspection('');
     setTimeout(() => runAnalysis(), 100);
   };

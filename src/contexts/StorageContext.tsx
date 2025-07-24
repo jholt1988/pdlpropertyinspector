@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Inspection, Property, Report } from '../types';
+import { Inspection, Property, Report, RepairPlan } from '../types';
 import { generateInspectionStructure } from '../utils/inspectionTemplates';
 import { generateInspectionId } from '../utils/idGenerator';
 
@@ -7,11 +7,14 @@ interface StorageContextType {
   inspections: Inspection[];
   properties: Property[];
   reports: Report[];
+  repairPlans: RepairPlan[];
   saveInspection: (inspection: Inspection) => Promise<void>;
   getInspection: (id: string) => Inspection | null;
   deleteInspection: (id: string) => Promise<void>;
   saveProperty: (property: Property) => Promise<void>;
   getProperties: () => Property[];
+  saveRepairPlan: (plan: RepairPlan) => Promise<void>;
+  getRepairPlans: () => RepairPlan[];
   loadData: () => Promise<void>;
 }
 
@@ -29,12 +32,14 @@ export function StorageProvider({ children }: { children: React.ReactNode }) {
   const [inspections, setInspections] = useState<Inspection[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
+  const [repairPlans, setRepairPlans] = useState<RepairPlan[]>([]);
 
   const loadData = async () => {
     try {
       const storedInspections = localStorage.getItem('inspections');
       const storedProperties = localStorage.getItem('properties');
       const storedReports = localStorage.getItem('reports');
+      const storedPlans = localStorage.getItem('repairPlans');
 
       if (storedInspections) {
         setInspections(JSON.parse(storedInspections));
@@ -44,6 +49,9 @@ export function StorageProvider({ children }: { children: React.ReactNode }) {
       }
       if (storedReports) {
         setReports(JSON.parse(storedReports));
+      }
+      if (storedPlans) {
+        setRepairPlans(JSON.parse(storedPlans));
       }
     } catch (error) {
       console.error('Error loading data:', error);
@@ -149,16 +157,28 @@ export function StorageProvider({ children }: { children: React.ReactNode }) {
 
   const getProperties = () => properties;
 
+  const saveRepairPlan = async (plan: RepairPlan) => {
+    const updated = repairPlans.filter(p => p.id !== plan.id);
+    updated.push(plan);
+    setRepairPlans(updated);
+    localStorage.setItem('repairPlans', JSON.stringify(updated));
+  };
+
+  const getRepairPlans = () => repairPlans;
+
   return (
     <StorageContext.Provider value={{
       inspections,
       properties,
       reports,
+      repairPlans,
       saveInspection,
       getInspection,
       deleteInspection,
       saveProperty,
       getProperties,
+      saveRepairPlan,
+      getRepairPlans,
       loadData,
     }}>
       {children}

@@ -81,6 +81,16 @@ export interface Report {
   pdfPath: string;
 }
 
+export interface RepairPlan {
+  id: string;
+  propertyId: string;
+  unitNumber?: number;
+  inspectionId?: string;
+  inventoryData: InventoryItem[];
+  analysisResults: AnalysisResult;
+  createdAt: string;
+}
+
 export interface InventoryItem {
   itemId: string;
   itemName: string;
