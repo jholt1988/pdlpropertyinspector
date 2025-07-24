@@ -2,6 +2,8 @@ import React, { useState, useRef } from 'react';
 import { Upload, Plus, FileText, Database, Trash2 } from 'lucide-react';
 import { InventoryItem, SystemConfig, AnalysisResult } from '../../types';
 import { analyzeInventory } from '../../utils/analysisEngine';
+import { useStorage } from '../../contexts/StorageContext';
+import { inspectionToInventoryItems } from '../../utils/inspectionConverter';
 
 interface DataInputProps {
   inventoryData: InventoryItem[];
@@ -14,13 +16,15 @@ const DataInput: React.FC<DataInputProps> = ({
   inventoryData, 
   setInventoryData, 
   setAnalysisResults,
-  systemConfig 
+  systemConfig
 }) => {
   const [inputMethod, setInputMethod] = useState<'csv' | 'json' | 'manual'>('csv');
   const [newItem, setNewItem] = useState<Partial<InventoryItem>>({
     currentCondition: 'Good'
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { inspections } = useStorage();
+  const [selectedInspection, setSelectedInspection] = useState('');
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -109,9 +113,27 @@ const DataInput: React.FC<DataInputProps> = ({
       alert('No inventory data to analyze');
       return;
     }
-    
+
     const results = analyzeInventory(inventoryData, systemConfig);
     setAnalysisResults(results);
+  };
+
+  const importFromInspection = () => {
+    const inspection = inspections.find(i => i.id === selectedInspection);
+    if (!inspection) {
+      alert('Select an inspection to import');
+      return;
+    }
+
+    const items = inspectionToInventoryItems(inspection);
+    if (items.length === 0) {
+      alert('No actionable items found in selected inspection');
+      return;
+    }
+
+    setInventoryData([...inventoryData, ...items]);
+    setSelectedInspection('');
+    setTimeout(() => runAnalysis(), 100);
   };
 
   const removeItem = (itemId: string) => {
@@ -153,6 +175,36 @@ const DataInput: React.FC<DataInputProps> = ({
           })}
         </div>
       </div>
+
+      {/* Import from Inspection */}
+      {inspections.length > 0 && (
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Import From Inspection
+          </label>
+          <div className="flex space-x-2">
+            <select
+              value={selectedInspection}
+              onChange={(e) => setSelectedInspection(e.target.value)}
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Select inspection</option>
+              {inspections.map((insp) => (
+                <option key={insp.id} value={insp.id}>
+                  {insp.propertyId} - {insp.id}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={importFromInspection}
+              disabled={!selectedInspection}
+              className={`btn ${selectedInspection ? 'btn-primary' : 'btn-secondary'}`}
+            >
+              Import
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* File Upload */}
       {(inputMethod === 'csv' || inputMethod === 'json') && (
