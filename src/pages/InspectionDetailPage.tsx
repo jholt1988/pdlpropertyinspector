@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, CheckCircle, Camera, Users } from 'lucide-react';
 import { useStorage } from '../contexts/StorageContext';
@@ -12,6 +12,7 @@ export function InspectionDetailPage() {
   const [activeRoomIndex, setActiveRoomIndex] = useState(0);
   const [activeItemIndex, setActiveItemIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -44,6 +45,26 @@ export function InspectionDetailPage() {
     const updatedInspection = { ...inspection, generalNotes: notes };
     setInspection(updatedInspection);
     saveInspection(updatedInspection);
+  };
+
+  const handleAddPhotoClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !inspection) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result as string;
+      const item = inspection.rooms[activeRoomIndex].checklistItems[activeItemIndex];
+      const updatedPhotos = [...item.photos, base64].slice(0, 5);
+      updateChecklistItem(activeRoomIndex, activeItemIndex, { photos: updatedPhotos });
+    };
+    reader.readAsDataURL(file);
+    // Reset the input so the same file can be selected again if needed
+    e.target.value = '';
   };
 
   const completeInspection = async () => {
@@ -243,10 +264,25 @@ export function InspectionDetailPage() {
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-lg font-medium text-gray-900">Photos ({currentItem.photos.length}/5)</h3>
-                  <button className="btn btn-secondary">
-                    <Camera size={16} />
-                    Add Photo
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleAddPhotoClick}
+                      disabled={currentItem.photos.length >= 5}
+                      className="btn btn-secondary"
+                    >
+                      <Camera size={16} />
+                      Add Photo
+                    </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handlePhotoChange}
+                      className="hidden"
+                    />
+                  </>
                 </div>
                 {currentItem.photos.length > 0 && (
                   <div className="flex gap-2 overflow-x-auto">
