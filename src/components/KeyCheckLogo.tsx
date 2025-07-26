@@ -11,8 +11,8 @@ export function KeyCheckLogo({ size = 'md', className = '' }: KeyCheckLogoProps)
   };
 
   return (
-    <div className={`${sizeClasses[size]} ${className} relative`}>
+    <div style={{margin:"0 10px 0 0"}} className={`${sizeClasses[size]} ${className} relative`}>
 
-       <img src='/image_119_100.png' style={{width:'119px', height:'100px'}} />
+       <img src='/image_119_100.png' style={{width:'95.2px', height:'80px'}} />
     </div>
           )}

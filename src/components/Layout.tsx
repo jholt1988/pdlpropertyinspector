@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, ClipboardList, FileText, User, LogOut } from 'lucide-react';
+import { Home, ClipboardList, FileText, User, LogOut, Hammer } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { KeyCheckLogo } from './KeyCheckLogo';
 
@@ -17,6 +17,7 @@ export function Layout({ children }: LayoutProps) {
     { name: 'Inspections', href: '/inspections', icon: ClipboardList },
     { name: 'Reports', href: '/reports', icon: FileText },
     { name: 'Profile', href: '/profile', icon: User },
+    {name: 'Repair Plan', href:'/project', icon: Hammer}
   ];
 
   const isActive = (href: string) => {
@@ -37,7 +38,7 @@ export function Layout({ children }: LayoutProps) {
       {/* Top bar with user info */}
       <div className="bg-white border-b border-gray-200 px-4 py-2">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3" style={{padding:'0px 10px 0px 0px'}}>
             <KeyCheckLogo  />
             <div>
               <p className="text-sm font-medium text-gray-900">{user?.name}</p>
@@ -69,14 +70,15 @@ export function Layout({ children }: LayoutProps) {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`flex flex-col items-center py-2 px-3 rounded-lg transition ${
+                style={{padding: "5px 15px"}}
+                className={`flex flex-col items-center py-5  rounded-lg transition ${
                   active
                     ? 'text-keycheck-primary bg-keycheck-light'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                    : 'text-#5a6b5d hover:text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 <Icon size={20} />
-                <span className="text-xs mt-1 font-medium">{item.name}</span>
+                <span className="text-xs mt-1 ml-5 mr-5 font-medium">{item.name}</span>
               </Link>
             );
           })}
