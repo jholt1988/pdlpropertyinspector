@@ -8,9 +8,9 @@ import SystemSettings from '../components/RepairPlan/SystemSettings';
 import { InventoryItem, AnalysisResult, SystemConfig, Inspection, RepairPlan } from '../types';
 import { useStorage } from '../contexts/StorageContext';
 import { generateUniqueId } from '../utils/idGenerator';
-import {PropertyRepairEstimatorAgent} from 'key-check-agent';
+import { estimateRepairCosts } from '../utils/agentIntegration';
 import { OpenAI } from 'openai';
-import{ setDefaultOpenAIKey, setDefaultOpenAIClient } from '@openai/agents';
+import { setDefaultOpenAIClient } from '@openai/agents';
 
 
 function ProjectPage() {
@@ -56,9 +56,9 @@ function ProjectPage() {
       alert('Run analysis before saving the plan');
       return;
     }
-    const agent = await PropertyRepairEstimatorAgent(inventoryData, analysisResults, "US");
-    console.log("Running Property Repair Estimator Agent...");
-    console.log((await agent).overall_project_estimate)
+    console.log('Running Property Repair Estimator Agent...');
+    const estimate = await estimateRepairCosts(analysisResults.flaggedItems, 'US');
+    console.log(estimate.overall_project_estimate);
     const plan: RepairPlan = {
       id: generateUniqueId('plan_'),
       propertyId: currentInspection?.propertyId || 'unknown',
@@ -66,6 +66,7 @@ function ProjectPage() {
       inspectionId: currentInspection?.id,
       inventoryData,
       analysisResults,
+      estimate,
       createdAt: new Date().toISOString(),
     };
     await saveRepairPlan(plan);

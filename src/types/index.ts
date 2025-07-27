@@ -81,6 +81,27 @@ export interface Report {
   pdfPath: string;
 }
 
+export interface EstimateLine {
+  item_description: string;
+  location: string;
+  issue_type: string;
+  estimated_labor_cost: number;
+  estimated_material_cost: number;
+  item_total_cost: number;
+  repair_instructions: string[];
+  notes?: string;
+}
+
+export interface EstimateResult {
+  overall_project_estimate: number;
+  itemized_breakdown: EstimateLine[];
+  metadata: {
+    creation_date: string;
+    currency: string;
+    disclaimer: string;
+  };
+}
+
 export interface RepairPlan {
   id: string;
   propertyId: string;
@@ -88,6 +109,7 @@ export interface RepairPlan {
   inspectionId?: string;
   inventoryData: InventoryItem[];
   analysisResults: AnalysisResult;
+  estimate?: EstimateResult;
   createdAt: string;
 }
 
