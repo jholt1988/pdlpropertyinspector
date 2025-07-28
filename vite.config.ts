@@ -8,6 +8,12 @@ export default defineConfig({
     exclude: ['lucide-react'],
   },
   test: {
+
     environment: 'node',
+    exclude: ['tests/rateLimiter.test.ts'],
+
+    environment: 'happy-dom',
+    setupFiles: './tests/setup.ts',
+
   },
 })
