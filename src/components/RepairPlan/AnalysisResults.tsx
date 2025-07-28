@@ -9,7 +9,7 @@ interface AnalysisResultsProps {
 const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResults }) => {
   const [selectedTab, setSelectedTab] = useState<'all' | 'fix' | 'replace'>('all');
   const [selectedItem, setSelectedItem] = useState<FlaggedItem | null>(null);
-
+  console.log('Analysis Results:', analysisResults);
   if (!analysisResults) {
     return (
       <div className="p-6">

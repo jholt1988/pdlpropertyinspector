@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Upload, Plus, FileText, Database, Trash2 } from 'lucide-react';
 import { InventoryItem, SystemConfig, AnalysisResult, Inspection } from '../../types';
-import { analyzeInventory } from '../../utils/analysisEngine';
+import { analyzeInventoryAndGeneratePlan } from '../../utils/analysisEngine';
 import { useStorage } from '../../contexts/StorageContext';
 import { inspectionToInventoryItems } from '../../utils/inspectionConverter';
 
@@ -110,14 +110,16 @@ const DataInput: React.FC<DataInputProps> = ({
     setNewItem({ currentCondition: 'Good' });
   };
 
-  const runAnalysis = () => {
+  const runAnalysis = async() => {
     if (inventoryData.length === 0) {
       alert('No inventory data to analyze');
       return;
     }
 
-    const results = analyzeInventory(inventoryData, systemConfig);
-    setAnalysisResults(results);
+    const results = async () => {
+      return  await analyzeInventoryAndGeneratePlan(inventoryData, systemConfig);
+    };
+    setAnalysisResults(await results());
   };
 
   const importFromInspection = () => {

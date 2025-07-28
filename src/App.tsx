@@ -7,6 +7,9 @@ import { Layout } from './components/Layout';
 import { EmailVerificationBanner } from './components/EmailVerificationBanner';
 import ProjectPage from './pages/ProjectPage';
 
+
+// Removed env.config(); as 'env' is not defined
+
 // Lazy load page components for code splitting
 const HomePage = lazy(() => import('./pages/HomePage').then(module => ({ default: module.HomePage })));
 const InspectionsPage = lazy(() => import('./pages/InspectionsPage').then(module => ({ default: module.InspectionsPage })));

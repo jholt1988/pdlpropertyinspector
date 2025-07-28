@@ -159,6 +159,11 @@ export interface AnalysisResult {
 
 export interface SystemConfig {
   repairThreshold: number;
+  userLocation: {
+    city: string;
+    region: string;
+    country: string;
+  };
   laborRates: {
     general: number;
     electrical: number;

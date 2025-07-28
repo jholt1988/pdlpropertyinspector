@@ -1,20 +1,22 @@
 import { InventoryItem, FlaggedItem, AnalysisResult, SystemConfig } from '../types';
+import { generateDetailedRepairEstimate, UserLocation } from './customRepairEstimator';
 
-export const analyzeInventory = (inventory: InventoryItem[], config: SystemConfig): AnalysisResult => {
+export const analyzeInventoryAndGeneratePlan = async (
+  inventory: InventoryItem[],
+  config: SystemConfig
+): Promise<AnalysisResult> => {
   const flaggedItems: FlaggedItem[] = [];
   const currentDate = new Date();
-  
+
   let conditionFlags = 0;
   let lifecycleFlags = 0;
   let maintenanceFlags = 0;
 
+  const itemsToEstimate: InventoryItem[] = [];
+
   inventory.forEach(item => {
     const flagReasons: string[] = [];
-    let recommendation: 'fix' | 'replace' = 'fix';
-    let estimatedRepairCost = 0;
-    let estimatedReplacementCost = 0;
     let flagReason: 'condition' | 'lifecycle' | 'maintenance' = 'condition';
-    let flagDetails = '';
 
     // Check condition-based flags
     const poorConditions = ['Poor', 'Damaged', 'Non-functional'];
@@ -26,12 +28,16 @@ export const analyzeInventory = (inventory: InventoryItem[], config: SystemConfi
 
     // Check lifecycle-based flags
     const purchaseDate = new Date(item.purchaseDate);
-    const monthsSincePurchase = Math.floor((currentDate.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24 * 30));
+    const monthsSincePurchase = Math.floor(
+      (currentDate.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24 * 30)
+    );
     const expectedLifespan = config.expectedLifespans[item.category] || config.expectedLifespans.general;
-    
+
     if (monthsSincePurchase >= expectedLifespan * 0.8) {
-      flagReasons.push(`lifecycle: approaching/exceeding expected lifespan (${monthsSincePurchase}/${expectedLifespan} months)`);
-      if (flagReason === 'condition') {
+      flagReasons.push(
+        `lifecycle: approaching/exceeding expected lifespan (${monthsSincePurchase}/${expectedLifespan} months)`
+      );
+      if (flagReason !== 'condition') {
         flagReason = 'lifecycle';
         lifecycleFlags++;
       }
@@ -40,96 +46,79 @@ export const analyzeInventory = (inventory: InventoryItem[], config: SystemConfi
     // Check maintenance-based flags
     if (item.lastMaintenanceDate) {
       const lastMaintenanceDate = new Date(item.lastMaintenanceDate);
-      const monthsSinceMaintenance = Math.floor((currentDate.getTime() - lastMaintenanceDate.getTime()) / (1000 * 60 * 60 * 24 * 30));
-      const maintenanceThreshold = config.maintenanceThresholds[item.category] || config.maintenanceThresholds.general || 24;
-      
+      const monthsSinceMaintenance = Math.floor(
+        (currentDate.getTime() - lastMaintenanceDate.getTime()) / (1000 * 60 * 60 * 24 * 30)
+      );
+      const maintenanceThreshold =
+        config.maintenanceThresholds[item.category] || config.maintenanceThresholds.general || 24;
+
       if (monthsSinceMaintenance > maintenanceThreshold) {
         flagReasons.push(`maintenance: overdue by ${monthsSinceMaintenance - maintenanceThreshold} months`);
-        if (flagReason !== 'condition') {
+        if (flagReason !== 'condition' && flagReason !== 'lifecycle') {
           flagReason = 'maintenance';
           maintenanceFlags++;
         }
       }
     }
 
-    // Only process items with flags
-    if (flagReasons.length === 0) return;
-
-    // Calculate costs
-    const laborRate = config.laborRates[item.category] || config.laborRates.general;
-    const itemValue = item.currentMarketValue || item.originalCost;
-
-    // Estimate repair cost based on condition and category
-    let repairHours = 2; // Base hours
-    switch (item.currentCondition) {
-      case 'Poor':
-        repairHours = 4;
-        break;
-      case 'Damaged':
-        repairHours = 6;
-        break;
-      case 'Non-functional':
-        repairHours = 8;
-        break;
+    if (flagReasons.length > 0) {
+      itemsToEstimate.push(item);
     }
+  });
 
-    const laborCost = laborRate * repairHours;
-    const partsCost = itemValue * 0.2; // Estimate 20% of item value for parts
-    estimatedRepairCost = laborCost + partsCost;
-
-    // Estimate replacement cost
-    const newUnitCost = itemValue * 1.1; // Assume 10% price increase for new units
-    const installationCost = laborRate * 2; // 2 hours for installation
-    const disposalCost = 50; // Standard disposal fee
-    estimatedReplacementCost = newUnitCost + installationCost + disposalCost;
-
-    // Apply repair threshold logic
-    const repairRatio = estimatedRepairCost / itemValue;
-    recommendation = repairRatio > config.repairThreshold ? 'replace' : 'fix';
-
-    // Generate detailed information
-    flagDetails = `Item flagged due to ${flagReasons.join(', ')}. ` +
-      `Cost analysis: repair ($${estimatedRepairCost.toLocaleString()}) vs replace ($${estimatedReplacementCost.toLocaleString()}) ` +
-      `against item value of $${itemValue.toLocaleString()}.`;
-
-    const repairSteps = generateRepairSteps(item, recommendation);
-    const requiredResources = generateRequiredResources(item, recommendation);
-    const estimatedTimeline = generateEstimatedTimeline(item, recommendation);
-
-    const flaggedItem: FlaggedItem = {
-      ...item,
-      flagReason,
-      flagDetails,
-      recommendation,
-      estimatedRepairCost,
-      estimatedReplacementCost,
-      repairSteps,
-      requiredResources,
-      estimatedTimeline,
-      costBreakdown: {
-        labor: laborCost,
-        parts: recommendation === 'fix' ? partsCost : newUnitCost,
-        installation: recommendation === 'replace' ? installationCost : undefined,
-        disposal: recommendation === 'replace' ? disposalCost : undefined
+  if (itemsToEstimate.length === 0) {
+    return {
+      totalItems: inventory.length,
+      flaggedItems: [],
+      itemsToFix: [],
+      itemsToReplace: [],
+      totalEstimatedCost: 0,
+      generatedDate: new Date().toISOString(),
+      summary: {
+        conditionFlags: 0,
+        lifecycleFlags: 0,
+        maintenanceFlags: 0
       }
     };
+  }
 
+  const userLocation: UserLocation = {
+    ...config.userLocation,
+    type: 'approximate'
+  };
+
+  const estimate = await generateDetailedRepairEstimate(itemsToEstimate, userLocation);
+
+  estimate.line_items.forEach(lineItem => {
+    const originalItem = inventory.find(invItem => invItem.itemName === lineItem.item_description)!;
+
+    const flaggedItem: FlaggedItem = {
+      ...originalItem,
+      flagReason: 'condition', // This can be refined
+      flagDetails: `Flagged for: ${lineItem.issue_type}`,
+      recommendation: lineItem.recommended_option.action,
+      estimatedRepairCost: lineItem.repair_costs.total_cost,
+      estimatedReplacementCost: lineItem.replacement_costs.total_cost,
+      repairSteps: lineItem.repair_steps,
+      requiredResources: generateRequiredResources(originalItem, lineItem.recommended_option.action),
+      estimatedTimeline: generateEstimatedTimeline(originalItem, lineItem.recommended_option.action),
+      costBreakdown: {
+        labor: lineItem.recommended_option.labor_cost,
+        parts: lineItem.recommended_option.material_cost
+      }
+    };
     flaggedItems.push(flaggedItem);
   });
 
   const itemsToFix = flaggedItems.filter(item => item.recommendation === 'fix');
   const itemsToReplace = flaggedItems.filter(item => item.recommendation === 'replace');
-  
-  const totalEstimatedCost = flaggedItems.reduce((sum, item) => {
-    return sum + (item.recommendation === 'fix' ? item.estimatedRepairCost! : item.estimatedReplacementCost!);
-  }, 0);
 
   return {
     totalItems: inventory.length,
     flaggedItems,
     itemsToFix,
     itemsToReplace,
-    totalEstimatedCost,
+    totalEstimatedCost: estimate.summary.total_project_cost,
     generatedDate: new Date().toISOString(),
     summary: {
       conditionFlags,
@@ -137,74 +126,6 @@ export const analyzeInventory = (inventory: InventoryItem[], config: SystemConfi
       maintenanceFlags
     }
   };
-};
-
-const generateRepairSteps = (item: InventoryItem, recommendation: 'fix' | 'replace'): string[] => {
-  const baseSteps = {
-    fix: {
-      electrical: [
-        'Conduct safety inspection and power isolation',
-        'Diagnose specific electrical fault',
-        'Replace faulty components or wiring',
-        'Test functionality and safety compliance',
-        'Document maintenance and update records'
-      ],
-      plumbing: [
-        'Isolate water supply to affected area',
-        'Assess extent of plumbing issue',
-        'Replace or repair damaged pipes/fixtures',
-        'Test for leaks and proper water pressure',
-        'Restore water supply and document work'
-      ],
-      hvac: [
-        'Shut down HVAC system safely',
-        'Inspect and clean all components',
-        'Replace worn or damaged parts',
-        'Calibrate system controls and sensors',
-        'Test system operation and efficiency'
-      ],
-      general: [
-        'Assess current condition and damage extent',
-        'Gather necessary tools and replacement parts',
-        'Perform repair according to manufacturer guidelines',
-        'Test functionality and safety',
-        'Update maintenance records'
-      ]
-    },
-    replace: {
-      electrical: [
-        'Source equivalent or upgraded electrical component',
-        'Schedule certified electrician for installation',
-        'Safely remove existing equipment',
-        'Install new equipment per electrical codes',
-        'Test and commission new installation'
-      ],
-      plumbing: [
-        'Procure replacement plumbing fixture/component',
-        'Schedule licensed plumber for installation',
-        'Remove old plumbing equipment',
-        'Install new component with proper connections',
-        'Test system and verify compliance with codes'
-      ],
-      hvac: [
-        'Select appropriate replacement HVAC equipment',
-        'Coordinate with HVAC contractor for installation',
-        'Remove and dispose of old equipment properly',
-        'Install new equipment with proper connections',
-        'Commission system and verify performance'
-      ],
-      general: [
-        'Identify suitable replacement item',
-        'Coordinate procurement and delivery',
-        'Remove existing item safely',
-        'Install replacement item properly',
-        'Verify functionality and document installation'
-      ]
-    }
-  };
-
-  const category = item.category in baseSteps[recommendation] ? item.category : 'general';
-  return baseSteps[recommendation][category as keyof typeof baseSteps.fix];
 };
 
 const generateRequiredResources = (item: InventoryItem, recommendation: 'fix' | 'replace'): string[] => {
