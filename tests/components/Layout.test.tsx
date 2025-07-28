@@ -21,8 +21,9 @@ describe('Layout', () => {
       </MemoryRouter>
     );
     expect(getByText('Tester')).toBeTruthy();
-    (window as any).confirm = () => true;
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
     fireEvent.click(getByTitle('Logout'));
     expect(mockLogout).toHaveBeenCalled();
   });
-});
+    vi.restoreAllMocks();
+  });
