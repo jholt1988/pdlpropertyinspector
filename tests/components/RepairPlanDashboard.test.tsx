@@ -16,7 +16,7 @@ const analysis: AnalysisResult = {
 describe('RepairPlan Dashboard', () => {
   it('renders stats', () => {
     const { getByText } = render(
-      <Dashboard inventoryData={[{ itemId: '1', itemName: 'A', category: 'hvac', currentCondition: 'Good', purchaseDate: '2020-01-01', originalCost: 1 },{ itemId: '2', itemName: 'B', category: 'hvac', currentCondition: 'Poor', purchaseDate: '2020-01-01', originalCost: 1 }]} analysisResults={analysis} />
+      <Dashboard inventoryData={inventoryData} analysisResults={analysis} />
     );
     expect(getByText('Total Inventory Items')).toBeTruthy();
     expect(getByText('2')).toBeTruthy();
