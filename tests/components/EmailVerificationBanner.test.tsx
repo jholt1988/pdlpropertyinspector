@@ -17,8 +17,8 @@ describe('EmailVerificationBanner', () => {
   });
 
   it('calls resendVerificationEmail on button click', () => {
-    const { getAllByText } = render(<EmailVerificationBanner />);
-    fireEvent.click(getAllByText('Resend Email')[0]);
+    const { getByRole } = render(<EmailVerificationBanner />);
+    fireEvent.click(getByRole('button', { name: 'Resend Email' }));
     expect(mockResend).toHaveBeenCalledWith('test@example.com');
   });
 });
