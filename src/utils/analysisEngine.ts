@@ -1,5 +1,11 @@
-import { InventoryItem, FlaggedItem, AnalysisResult, SystemConfig } from '../types';
-import { generateDetailedRepairEstimate, UserLocation } from './customRepairEstimator';
+import {
+  InventoryItem,
+  FlaggedItem,
+  AnalysisResult,
+  SystemConfig,
+  UserLocation
+} from '../types';
+import { generateDetailedRepairEstimate } from './customRepairEstimator';
 
 export const analyzeInventoryAndGeneratePlan = async (
   inventory: InventoryItem[],

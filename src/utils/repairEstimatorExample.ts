@@ -1,5 +1,5 @@
-import { generateDetailedRepairEstimate, UserLocation, EstimateLineItem } from './customRepairEstimator';
-import { InventoryItem } from '../types';
+import { generateDetailedRepairEstimate } from './customRepairEstimator';
+import { InventoryItem, UserLocation, EstimateLineItem } from '../types';
 
 // Example usage of the refactored repair estimator
 export async function exampleRepairEstimate() {
