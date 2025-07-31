@@ -178,3 +178,74 @@ export interface SystemConfig {
     [category: string]: number; // months
   };
 }
+
+// types.ts
+export interface UserLocation {
+  city: string;
+  region: string;
+  country: string;
+  type: 'approximate';
+}
+
+export interface EstimateLineItem {
+  item_description: string;
+  location: string;
+  issue_type: string;
+  recommendation: 'fix' | 'replace';
+  repair_costs: Record<'labor_cost' | 'material_cost' | 'total_cost', number>;
+  replacement_costs: Record<'labor_cost' | 'material_cost' | 'total_cost', number>;
+  recommended_option: {
+    action: 'fix' | 'replace';
+    labor_cost: number;
+    material_cost: number;
+    total_cost: number;
+    cost_savings?: number;
+  };
+  repair_steps: string[];
+  notes?: string;
+}
+
+export interface DetailedEstimate {
+  line_items: EstimateLineItem[];
+  summary: {
+    total_labor_cost: number;
+    total_material_cost: number;
+    total_project_cost: number;
+    items_to_repair: number;
+    items_to_replace: number;
+  };
+  metadata: {
+    user_location: UserLocation;
+    currency: string;
+    generated_date: string;
+    disclaimer: string;
+  };
+}
+
+export interface InventoryItem {
+  item_description: string;
+  location: string;
+  issue_type: string;
+}
+
+export interface EstimateLine {
+  item_description: string;
+  location: string;
+  issue_type: string;
+  estimated_labor_cost: number;
+  estimated_material_cost: number;
+  item_total_cost: number;
+  repair_instructions: string[];
+  notes?: string;
+}
+
+export interface EstimateResult {
+  overall_project_estimate: number;
+  itemized_breakdown: EstimateLine[];
+  metadata: {
+    creation_date: string;
+    currency: string;
+    disclaimer: string;
+  };
+}
+

@@ -1,16 +1,28 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest';
 import '@testing-library/jest-dom/vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import Dashboard from '../../../src/components/RepairPlan/Dashboard';
-import { sampleInventory, sampleAnalysis } from './sampleData';
+import { mockAnalysisResults, mockInventoryData } from '../../mocks/analysis';
 
 describe('Dashboard component', () => {
   it('renders stats summary', () => {
-    render(<Dashboard inventoryData={sampleInventory} analysisResults={sampleAnalysis} />);
-    expect(screen.getByText('Dashboard Overview')).toBeInTheDocument();
-    expect(screen.getByText('Total Inventory Items')).toBeInTheDocument();
-    expect(screen.getByText('Total Estimated Remediation Cost')).toBeInTheDocument();
+    render(
+      <Dashboard
+        analysisResults={mockAnalysisResults}
+        inventoryData={mockInventoryData}
+      />
+    );
+
+    // Find the "Total Inventory Items" card by its title
+    const totalItemsCard = screen.getByText('Total Inventory Items').closest('div');
+    // Assert that the number 1 is within that specific card
+    expect(within(totalItemsCard).getByText('1')).toBeInTheDocument();
+
+    // Find the "Flagged Items" card by its title
+    const flaggedItemsCard = screen.getByText('Flagged Items').closest('div');
+    // Assert that the number 1 is within that specific card
+    expect(within(flaggedItemsCard).getByText('1')).toBeInTheDocument();
   });
 });
 

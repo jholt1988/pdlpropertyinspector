@@ -1,5 +1,5 @@
 import { InventoryItem, SystemConfig, AnalysisResult } from '../../../src/types';
-import { analyzeInventory } from '../../../src/utils/analysisEngine';
+import { analyzeInventoryAndGeneratePlan } from '../../../src/utils/analysisEngine';
 
 export const sampleInventory: InventoryItem[] = [
   {
@@ -43,4 +43,4 @@ export const sampleConfig: SystemConfig = {
   }
 };
 
-export const sampleAnalysis: AnalysisResult = analyzeInventory(sampleInventory, sampleConfig);
+export const sampleAnalysis: AnalysisResult = analyzeInventoryAndGeneratePlan(sampleInventory, sampleConfig);

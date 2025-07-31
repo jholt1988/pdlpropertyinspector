@@ -7,7 +7,7 @@ import ReportGenerator from '../components/RepairPlan/ReportGenerator';
 import SystemSettings from '../components/RepairPlan/SystemSettings';
 import { InventoryItem, AnalysisResult, SystemConfig, Inspection, RepairPlan } from '../types';
 import { useStorage } from '../contexts/StorageContext';
-import { generateUniqueId } from '../utils/idGenerator';
+import { generateInspectionId } from '../utils/idGenerator';
 import { estimateRepairCosts } from '../utils/agentIntegration';
 import { OpenAI } from 'openai';
 import { setDefaultOpenAIClient } from '@openai/agents';
@@ -60,7 +60,7 @@ function ProjectPage() {
     const estimate = await estimateRepairCosts(analysisResults.flaggedItems, 'US');
     console.log(estimate.overall_project_estimate);
     const plan: RepairPlan = {
-      id: generateUniqueId('plan_'),
+      id: generateInspectionId('plan_'),
       propertyId: currentInspection?.propertyId || 'unknown',
       unitNumber: currentInspection?.unitNumber,
       inspectionId: currentInspection?.id,

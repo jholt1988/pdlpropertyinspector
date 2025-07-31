@@ -122,7 +122,7 @@ const DataInput: React.FC<DataInputProps> = ({
     setAnalysisResults(await results());
   };
 
-  const importFromInspection = () => {
+  const importFromInspection = async () => {
     const inspection = inspections.find(i => i.id === selectedInspection);
     if (!inspection) {
       alert('Select an inspection to import');
@@ -140,7 +140,7 @@ const DataInput: React.FC<DataInputProps> = ({
       onInspectionImported(inspection);
     }
     setSelectedInspection('');
-    setTimeout(() => runAnalysis(), 100);
+    await runAnalysis();
   };
 
   const removeItem = (itemId: string) => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { analyzeInventory } from '../../src/utils/analysisEngine.ts';
+import { analyzeInventoryAndGeneratePlan } from '../../src/utils/analysisEngine.ts';
 import { InventoryItem, SystemConfig } from '../../src/types';
 
 function withFixedDate<T>(iso: string, fn: () => T): T {
@@ -25,9 +25,9 @@ function withFixedDate<T>(iso: string, fn: () => T): T {
   }
 }
 
-describe('analyzeInventory', () => {
+describe('analyzeInventory', async() => {
   it('produces correct counts and costs', () => {
-    withFixedDate('2024-01-01T00:00:00Z', () => {
+    withFixedDate('2024-01-01T00:00:00Z', async() => {
       const inventory: InventoryItem[] = [
       {
         itemId: '1',
@@ -76,7 +76,7 @@ describe('analyzeInventory', () => {
       }
     };
 
-    const result = analyzeInventory(inventory, config);
+    const result = await analyzeInventoryAndGeneratePlan(inventory, config);
     expect(result.totalItems).toBe(2);
     expect(result.flaggedItems.length).toBe(2);
     expect(result.itemsToFix.length).toBe(1);

@@ -1,30 +1,35 @@
-import { describe, it, expect } from 'vitest';
-import { generatePropertyId, generateInspectionId, generateUniqueId } from '../../src/utils/idGenerator.ts';
+// @vitest-environment jsdom
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { generatePropertyId, generateInspectionId, generateItemId } from '../../src/utils/idGenerator';
+import { resetSequences } from '../../src/utils/sequenceGenerator';
 
-function withFixedRandom<T>(time: number, rand: number, fn: () => T): T {
-  const realRandom = Math.random;
-  const realDateNow = Date.now;
-  Math.random = () => rand;
-  Date.now = () => time;
-  try {
-    return fn();
-  } finally {
-    Math.random = realRandom;
-    Date.now = realDateNow;
-  }
-}
+// Helper function to fix Math.random and Date.now for predictable IDs
+const withFixedRandom = (dateNow: number, mathRandom: number, fn: () => void) => {
+  const originalDateNow = Date.now;
+  const originalMathRandom = Math.random;
+  Date.now = vi.fn(() => dateNow);
+  Math.random = vi.fn(() => mathRandom);
+  fn();
+  Date.now = originalDateNow;
+  Math.random = originalMathRandom;
+};
 
 describe('id generators', () => {
+  beforeEach(() => {
+    resetSequences();
+  });
+
   it('produce predictable formats', () => {
+    // Mock Date.now and Math.random to get predictable output
     withFixedRandom(0, 0.123456789, () => {
       const prop = generatePropertyId();
-      expect(prop).toMatch(/^PROP0000004FZZ$/);
+      expect(prop).toMatch(/^PROP00000014FZ$/);
 
-      const insp = generateInspectionId(prop, 3);
-      expect(insp).toBe(`${prop}-UNIT03`);
+      const insp = generateInspectionId(prop);
+      expect(insp).toMatch(/^INSP-PROP00000014FZ-0000001$/);
 
-      const uid = generateUniqueId('PRE_');
-      expect(uid).toMatch(/^PRE_0_4fzzzxjyl$/);
+      const item = generateItemId(insp);
+      expect(item).toMatch(/^ITEM-INSP-PROP00000014FZ-0000001-0000001$/);
     });
   });
 });

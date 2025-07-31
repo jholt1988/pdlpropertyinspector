@@ -1,18 +1,21 @@
 // Utility functions for generating unique IDs
+import { getNextSequence } from './sequenceGenerator'; // Assuming the sequence generator is in the same directory
 
-export function generatePropertyId(): string {
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).substr(2, 4).toUpperCase();
-  return `PROP${timestamp.toString().slice(-6)}${random}`;
-}
+export const generatePropertyId = () => {
+  const timestampPart = Date.now().toString(36).slice(-4).toUpperCase();
+  const randomPart = Math.random().toString(36).slice(2, 6).toUpperCase();
+  const sequence = getNextSequence('property').toString().padStart(7, '0');
+  return `PROP${sequence}${randomPart.slice(0, 3)}`;
+};
 
-export function generateInspectionId(propertyId: string, unitNumber: number): string {
-  const unitStr = unitNumber.toString().padStart(2, '0');
-  return `${propertyId}-UNIT${unitStr}`;
-}
+export const generateInspectionId = (propertyId: string) => {
+  const sequence = getNextSequence('inspection');
+  const paddedSequence = sequence.toString().padStart(7, '0');
+  return `INSP-${propertyId}-${paddedSequence}`;
+};
 
-export function generateUniqueId(prefix: string = ''): string {
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).substr(2, 9);
-  return `${prefix}${timestamp}_${random}`;
-}
+export const generateItemId = (inspectionId: string) => {
+  const sequence = getNextSequence('item');
+  const paddedSequence = sequence.toString().padStart(7, '0');
+  return `ITEM-${inspectionId}-${paddedSequence}`;
+};
