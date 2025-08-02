@@ -105,8 +105,8 @@ Currency: ${currency}`;
 
   try {
     const response = await run(agent, prompt);
-    console.log('Detailed Repair Estimator Response:', response);
-    const parsed = typeof response === 'string' ? JSON.parse(response) : response;
+    console.log('Detailed Repair Estimator Response:', response.finalOutput);
+    const parsed = typeof response === 'string' ? JSON.parse(response.finalOutput) : response.finalOutput;
     console.log('Parsed Estimate:', parsed);
     
     // Transform the response to match our DetailedEstimate interface
