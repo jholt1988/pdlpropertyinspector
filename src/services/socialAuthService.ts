@@ -6,6 +6,7 @@
 import { OAuthClient, SocialLoginResult } from '../utils/oauth/oauthClient';
 import { authService } from './authService';
 import { generateAccessToken, generateRefreshToken, generateSessionId, generateTokenFamily } from '../utils/security/jwtUtils';
+import { User } from '../types/user';
 
 export interface SocialUser {
   providerId: string;
@@ -20,7 +21,7 @@ export interface SocialUser {
 
 export interface SocialLoginResponse {
   success: boolean;
-  user?: any;
+  user?: User & { socialProviderId?: string; socialProviderUserId?: string };
   accessToken?: string;
   refreshToken?: string;
   error?: string;
@@ -29,6 +30,8 @@ export interface SocialLoginResponse {
 }
 
 export class SocialAuthService {
+  private static users: Map<string, User & { socialProviderId?: string; socialProviderUserId?: string }> = new Map();
+  private static sessions: Map<string, { userId: string; tokenFamily: string; createdAt: string }> = new Map();
   /**
    * Initiates social login flow
    */
@@ -154,23 +157,20 @@ export class SocialAuthService {
    */
   private static async createSocialUser(socialUser: SocialUser): Promise<SocialLoginResponse> {
     try {
-      const newUser = {
-        id: `social_${socialUser.providerId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      const newUser: User & { socialProviderId: string; socialProviderUserId: string } = {
+        id: `social_${socialUser.providerId}_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
         email: socialUser.email,
         name: socialUser.name,
-        role: 'property_manager' as const, // Default role - could be configurable
+        role: 'property_manager',
         avatar: socialUser.avatar,
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
-        emailVerified: true, // Social logins are pre-verified
-        provider: socialUser.providerId as any,
+        emailVerified: true,
+        provider: socialUser.providerId,
+        company: undefined,
+        phone: undefined,
         socialProviderId: socialUser.providerId,
-        socialProviderUserId: socialUser.providerUserId,
-        isActive: true,
-        failedLoginAttempts: 0,
-        firstName: socialUser.firstName,
-        lastName: socialUser.lastName,
-        locale: socialUser.locale,
+        socialProviderUserId: socialUser.providerUserId
       };
 
       // Store user in the auth service
@@ -214,7 +214,7 @@ export class SocialAuthService {
   /**
    * Logs in an existing social user
    */
-  private static async loginExistingSocialUser(user: any): Promise<SocialLoginResponse> {
+  private static async loginExistingSocialUser(user: User & { socialProviderId?: string; socialProviderUserId?: string }): Promise<SocialLoginResponse> {
     try {
       // Update last login
       user.lastLogin = new Date().toISOString();
@@ -274,13 +274,13 @@ export class SocialAuthService {
       }
 
       // Update user with social account information
-      const updatedUser = {
-        ...loginResult.user,
-        provider: socialUser.providerId as any,
+      const updatedUser: User & { socialProviderId?: string; socialProviderUserId?: string } = {
+        ...loginResult.user!,
+        provider: socialUser.providerId,
         socialProviderId: socialUser.providerId,
         socialProviderUserId: socialUser.providerUserId,
-        avatar: socialUser.avatar || loginResult.user.avatar,
-        emailVerified: true, // Social linking verifies email
+        avatar: socialUser.avatar || loginResult.user!.avatar,
+        emailVerified: true,
         lastLogin: new Date().toISOString(),
       };
 
@@ -316,7 +316,7 @@ export class SocialAuthService {
       }
 
       // Convert back to email provider
-      const updatedUser = {
+      const updatedUser: User = {
         ...user,
         provider: 'email',
         socialProviderId: undefined,
@@ -334,44 +334,30 @@ export class SocialAuthService {
 
   // Helper methods for data persistence
   // In a real application, these would interact with your database
-  // For now, we'll integrate with the existing localStorage-based system
+  // For this demo, data is stored in memory only
 
-  private static async findUserByEmail(email: string): Promise<any> {
-    const users = this.getStoredUsers();
-    return users.find((user: any) => user.email.toLowerCase() === email.toLowerCase());
-  }
-
-  private static async findUserById(userId: string): Promise<any> {
-    const users = this.getStoredUsers();
-    return users.find((user: any) => user.id === userId);
-  }
-
-  private static async storeUser(user: any): Promise<void> {
-    const users = this.getStoredUsers();
-    users.push(user);
-    localStorage.setItem('social_users', JSON.stringify(users));
-  }
-
-  private static async updateUser(user: any): Promise<void> {
-    const users = this.getStoredUsers();
-    const index = users.findIndex((u: any) => u.id === user.id);
-    if (index !== -1) {
-      users[index] = user;
-      localStorage.setItem('social_users', JSON.stringify(users));
+  private static async findUserByEmail(email: string): Promise<(User & { socialProviderId?: string; socialProviderUserId?: string }) | undefined> {
+    for (const user of this.users.values()) {
+      if (user.email.toLowerCase() === email.toLowerCase()) {
+        return user;
+      }
     }
+    return undefined;
+  }
+
+  private static async findUserById(userId: string): Promise<(User & { socialProviderId?: string; socialProviderUserId?: string }) | undefined> {
+    return this.users.get(userId);
+  }
+
+  private static async storeUser(user: User & { socialProviderId?: string; socialProviderUserId?: string }): Promise<void> {
+    this.users.set(user.id, user);
+  }
+
+  private static async updateUser(user: User & { socialProviderId?: string; socialProviderUserId?: string }): Promise<void> {
+    this.users.set(user.id, user);
   }
 
   private static async storeSession(sessionId: string, userId: string, tokenFamily: string): Promise<void> {
-    const sessions = JSON.parse(localStorage.getItem('social_sessions') || '{}');
-    sessions[sessionId] = {
-      userId,
-      tokenFamily,
-      createdAt: new Date().toISOString(),
-    };
-    localStorage.setItem('social_sessions', JSON.stringify(sessions));
-  }
-
-  private static getStoredUsers(): any[] {
-    return JSON.parse(localStorage.getItem('social_users') || '[]');
+    this.sessions.set(sessionId, { userId, tokenFamily, createdAt: new Date().toISOString() });
   }
 }

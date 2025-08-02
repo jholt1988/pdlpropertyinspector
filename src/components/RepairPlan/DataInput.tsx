@@ -27,6 +27,7 @@ const DataInput: React.FC<DataInputProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { inspections } = useStorage();
   const [selectedInspection, setSelectedInspection] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -79,8 +80,9 @@ const DataInput: React.FC<DataInputProps> = ({
         // Auto-run analysis
         setTimeout(() => runAnalysis(), 100);
         
-      } catch (error) {
-        alert('Error parsing file. Please check the format and try again.');
+      } catch (err) {
+        console.error('File parse error:', err);
+        setError('Error parsing file. Please check the format and try again.');
       }
     };
     
@@ -89,7 +91,7 @@ const DataInput: React.FC<DataInputProps> = ({
 
   const addManualItem = () => {
     if (!newItem.itemId || !newItem.itemName || !newItem.category || !newItem.purchaseDate || !newItem.originalCost) {
-      alert('Please fill in all required fields');
+      setError('Please fill in all required fields');
       return;
     }
 
@@ -110,17 +112,14 @@ const DataInput: React.FC<DataInputProps> = ({
     setNewItem({ currentCondition: 'Good' });
   };
 
-  const runAnalysis = async() => {
+  const runAnalysis = async () => {
     if (inventoryData.length === 0) {
-      alert('No inventory data to analyze');
+      setError('No inventory data to analyze');
       return;
     }
-
-    const results = async () => {
-      return  await runRepairEstimatorAgent(inventoryData, "", 'USD' );
-    };
-    const analysisResults = await results().then((res) => {
-      return {
+    try {
+      const res = await runRepairEstimatorAgent(inventoryData, '', 'USD');
+      const analysisResults = {
         total_flagged_items: res.estimate_summary.items_to_repair + res.estimate_summary.items_to_replace,
         itemsToFix: res.estimate_summary.items_to_repair,
         itemsToReplace: res.estimate_summary.items_to_replace,
@@ -136,21 +135,25 @@ const DataInput: React.FC<DataInputProps> = ({
           repair_instructions: item.repair_instructions,
           notes: item.notes
         }))
-      }
-    });
-    setAnalysisResults(analysisResults);
+      };
+      setAnalysisResults(analysisResults);
+      setError(null);
+    } catch (err) {
+      console.error('Analysis error:', err);
+      setError('Failed to run analysis');
+    }
   };
 
   const importFromInspection = async () => {
     const inspection = inspections.find(i => i.id === selectedInspection);
     if (!inspection) {
-      alert('Select an inspection to import');
+      setError('Select an inspection to import');
       return;
     }
 
     const items = inspectionToInventoryItems(inspection);
     if (items.length === 0) {
-      alert('No actionable items found in selected inspection');
+      setError('No actionable items found in selected inspection');
       return;
     }
 
@@ -168,6 +171,11 @@ const DataInput: React.FC<DataInputProps> = ({
 
   return (
     <div className="p-6">
+      {error && (
+        <div className="mb-4 p-2 text-sm text-red-700 bg-red-100 rounded">
+          {error}
+        </div>
+      )}
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Data Input</h2>
         <p className="text-gray-600">
@@ -178,16 +186,18 @@ const DataInput: React.FC<DataInputProps> = ({
       {/* Input Method Selection */}
       <div className="mb-6">
         <div className="flex space-x-4">
-          {[
-            { id: 'csv', label: 'CSV Upload', icon: FileText },
-            { id: 'json', label: 'JSON Upload', icon: Database },
-            { id: 'manual', label: 'Manual Entry', icon: Plus }
-          ].map(method => {
+          {(
+            [
+              { id: 'csv' as const, label: 'CSV Upload', icon: FileText },
+              { id: 'json' as const, label: 'JSON Upload', icon: Database },
+              { id: 'manual' as const, label: 'Manual Entry', icon: Plus }
+            ]
+          ).map(method => {
             const Icon = method.icon;
             return (
               <button
                 key={method.id}
-                onClick={() => setInputMethod(method.id as any)}
+                onClick={() => setInputMethod(method.id)}
                 className={`flex items-center px-4 py-2 rounded-lg border transition-colors ${
                   inputMethod === method.id
                     ? 'bg-blue-50 border-blue-300 text-blue-700'

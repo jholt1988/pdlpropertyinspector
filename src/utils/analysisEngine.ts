@@ -18,11 +18,11 @@ export const analyzeInventoryAndGeneratePlan = async (
   let lifecycleFlags = 0;
   let maintenanceFlags = 0;
 
-  const itemsToEstimate: InventoryItem[] = [];
+  const itemsToEstimate: { item: InventoryItem; flagReason: 'condition' | 'lifecycle' | 'maintenance'; flagDetails: string[] }[] = [];
 
   inventory.forEach(item => {
     const flagReasons: string[] = [];
-    let flagReason: 'condition' | 'lifecycle' | 'maintenance' = 'condition';
+    let flagReason: 'condition' | 'lifecycle' | 'maintenance' | null = null;
 
     // Check condition-based flags
     const poorConditions = ['Poor', 'Damaged', 'Non-functional'];
@@ -60,15 +60,15 @@ export const analyzeInventoryAndGeneratePlan = async (
 
       if (monthsSinceMaintenance > maintenanceThreshold) {
         flagReasons.push(`maintenance: overdue by ${monthsSinceMaintenance - maintenanceThreshold} months`);
-        if (flagReason !== 'condition' && flagReason !== 'lifecycle') {
+        if (!flagReason || (flagReason !== 'condition' && flagReason !== 'lifecycle')) {
           flagReason = 'maintenance';
           maintenanceFlags++;
         }
       }
     }
 
-    if (flagReasons.length > 0) {
-      itemsToEstimate.push(item);
+    if (flagReasons.length > 0 && flagReason) {
+      itemsToEstimate.push({ item, flagReason, flagDetails: flagReasons });
     }
   });
 
@@ -93,15 +93,17 @@ export const analyzeInventoryAndGeneratePlan = async (
     type: 'approximate'
   };
 
-  const estimate = await generateDetailedRepairEstimate(itemsToEstimate, userLocation);
+  const estimate = await generateDetailedRepairEstimate(itemsToEstimate.map(i => i.item), userLocation);
 
   estimate.line_items.forEach(lineItem => {
-    const originalItem = inventory.find(invItem => invItem.itemName === lineItem.item_description)!;
+    const match = itemsToEstimate.find(i => i.item.itemName === lineItem.item_description);
+    if (!match) return;
+    const { item: originalItem, flagReason, flagDetails } = match;
 
     const flaggedItem: FlaggedItem = {
       ...originalItem,
-      flagReason: 'condition', // This can be refined
-      flagDetails: `Flagged for: ${lineItem.issue_type}`,
+      flagReason,
+      flagDetails: flagDetails.join('; '),
       recommendation: lineItem.recommended_option.action,
       estimatedRepairCost: lineItem.repair_costs.total_cost,
       estimatedReplacementCost: lineItem.replacement_costs.total_cost,
