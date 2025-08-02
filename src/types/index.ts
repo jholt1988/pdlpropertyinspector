@@ -94,13 +94,13 @@ export interface EstimateLine {
 
 export interface EstimateResult {
   overall_project_estimate: number;
-  estimate_summary:{
+  estimate_summary: {
     total_labor_cost: number;
     total_material_cost: number;
     total_project_cost: number;
     items_to_repair: number;
     items_to_replace: number;
-  }
+  };
   itemized_breakdown: EstimateLine[];
   metadata: {
     creation_date: string;
@@ -166,11 +166,6 @@ export interface AnalysisResult {
 
 export interface SystemConfig {
   repairThreshold: number;
-  userLocation: {
-    city: string;
-    region: string;
-    country: string;
-  };
   laborRates: {
     general: number;
     electrical: number;
@@ -195,26 +190,49 @@ export interface UserLocation {
 }
 
 export interface EstimateLineItem {
-  item_description: string;
-  location: string;
-  issue_type: string;
-  recommendation: 'fix' | 'replace';
-  repair_costs: Record<'labor_cost' | 'material_cost' | 'total_cost', number>;
-  replacement_costs: Record<'labor_cost' | 'material_cost' | 'total_cost', number>;
-  recommended_option: {
-    action: 'fix' | 'replace';
-    labor_cost: number;
-    material_cost: number;
-    total_cost: number;
-    cost_savings?: number;
+  itemId: string;
+  itemName: string;
+  category: string;
+  currentCondition: string;
+  location?: string;
+  fix?: {
+    laborHours: number;
+    laborRate: number;
+    partsCost: number;
+    totalCost: number;
+    citations?: Array<{
+      description: string;
+      source: string;
+    }>;
   };
-  repair_steps: string[];
-  notes?: string;
+  replace?: {
+    laborHours?: number;
+    laborRate?: number;
+    partsCost?: number;
+    totalCost: number;
+    areaSqFt?: number;
+    laborCostPerSqFt?: number;
+    materialCostPerSqFt?: number;
+    removalCostPerSqFt?: number;
+    citations?: Array<{
+      description: string;
+      source: string;
+    }>;
+  };
+  recommendedAction: 'Fix' | 'Replace';
+  instructions?: {
+    fix?: string[];
+    replace?: string[];
+  };
 }
 
 export interface DetailedEstimate {
   line_items: EstimateLineItem[];
   summary: {
+    totalFixCost: number;
+    totalReplaceCost: number;
+    totalRecommendedCost: number;
+    overallRecommendation: string;
     total_labor_cost: number;
     total_material_cost: number;
     total_project_cost: number;
@@ -226,33 +244,8 @@ export interface DetailedEstimate {
     currency: string;
     generated_date: string;
     disclaimer: string;
-  };
-}
-
-export interface InventoryItem {
-  item_description: string;
-  location: string;
-  issue_type: string;
-}
-
-export interface EstimateLine {
-  item_description: string;
-  location: string;
-  issue_type: string;
-  estimated_labor_cost: number;
-  estimated_material_cost: number;
-  item_total_cost: number;
-  repair_instructions: string[];
-  notes?: string;
-}
-
-export interface EstimateResult {
-  overall_project_estimate: number;
-  itemized_breakdown: EstimateLine[];
-  metadata: {
-    creation_date: string;
-    currency: string;
-    disclaimer: string;
+    creationDate?: string;
+    location?: string;
   };
 }
 

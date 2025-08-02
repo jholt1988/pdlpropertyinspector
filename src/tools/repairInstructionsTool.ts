@@ -28,7 +28,7 @@ export function createRepairInstructionsTool(userLocation: UserLocation): Tool {
 
       const agent = new Agent({
         name: 'Repair Instruction Researcher',
-        instructions: `Find detailed, professional instructions to ${action_type} a ${item_description} experiencing ${issue_type}. Ensure the steps are code-compliant and practical.`,
+        instructions: `Find detailed, professional instructions to ${action_type} a ${item_description} experiencing ${issue_type}. Include all necessary materials and tools. Ensure the steps are code-compliant and practical.`,
         tools: [webSearchTool({ userLocation })],
         model: 'gpt-4.1'
       });

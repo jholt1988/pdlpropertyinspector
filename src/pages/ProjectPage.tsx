@@ -50,12 +50,20 @@ function ProjectPage() {
       return;
     }
     console.log('Running Property Repair Estimator Agent...');
+    // Convert flagged items back to InventoryItem format for the estimator
     const estimateData = analysisResults.flaggedItems.map(item => ({
-      item_description: item.itemName,
-      location: item.location || 'unknown',
-      issue_type: item.flagReason
+      itemId: item.itemId,
+      itemName: item.itemName,
+      category: item.category,
+      currentCondition: item.currentCondition,
+      purchaseDate: item.purchaseDate,
+      lastMaintenanceDate: item.lastMaintenanceDate,
+      originalCost: item.originalCost,
+      currentMarketValue: item.currentMarketValue,
+      location: item.location,
+      description: item.description
     }));
-    const estimate = await runRepairEstimatorAgent(estimateData,"", 'USD');
+    const estimate = await runRepairEstimatorAgent(estimateData, "", 'USD');
     console.log(estimate.overall_project_estimate);
     const plan: RepairPlan = {
       id: generateInspectionId('plan_'),

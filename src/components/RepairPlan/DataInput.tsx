@@ -117,25 +117,122 @@ const DataInput: React.FC<DataInputProps> = ({
       setError('No inventory data to analyze');
       return;
     }
+    
+    setError(null); // Clear any previous errors
+    
     try {
-      const res = await runRepairEstimatorAgent(inventoryData, '', 'USD');
+      // Use a default location if not provided
+      const res = await runRepairEstimatorAgent(inventoryData, 'Wichita, Kansas', 'USD');
+      
+      console.log('Estimate result:', res); // Debug log
+      
+      // Check if we have breakdown data
+      if (!res.itemized_breakdown || res.itemized_breakdown.length === 0) {
+        console.log('No itemized breakdown found, creating flagged items from inventory data');
+        
+        // If no breakdown, create flagged items from inventory data with poor conditions
+        const flaggedItems = inventoryData
+          .filter(item => item.currentCondition === 'Poor' || item.currentCondition === 'Damaged' || item.currentCondition === 'Non-functional')
+          .map(item => ({
+            // Map from inventory item
+            itemId: item.itemId,
+            itemName: item.itemName,
+            category: item.category,
+            currentCondition: item.currentCondition,
+            purchaseDate: item.purchaseDate,
+            originalCost: item.originalCost,
+            currentMarketValue: item.currentMarketValue,
+            location: item.location,
+            description: item.description,
+            
+            // Flagged item specific properties
+            flagReason: 'condition' as const,
+            flagDetails: `Item condition is ${item.currentCondition}`,
+            recommendation: item.currentCondition === 'Non-functional' ? 'replace' as const : 'fix' as const,
+            estimatedRepairCost: item.currentCondition !== 'Non-functional' ? 150 : undefined,
+            estimatedReplacementCost: item.currentCondition === 'Non-functional' ? 500 : undefined,
+            repairSteps: [`Assess ${item.itemName}`, `${item.currentCondition === 'Non-functional' ? 'Replace' : 'Repair'} ${item.itemName}`],
+            estimatedTimeline: '1-2 weeks',
+            costBreakdown: {
+              labor: item.currentCondition === 'Non-functional' ? 200 : 100,
+              parts: item.currentCondition === 'Non-functional' ? 300 : 50
+            }
+          }));
+          
+        const itemsToFix = flaggedItems.filter(item => item.recommendation === 'fix');
+        const itemsToReplace = flaggedItems.filter(item => item.recommendation === 'replace');
+        
+        const analysisResults = {
+          totalItems: inventoryData.length,
+          flaggedItems: flaggedItems,
+          itemsToFix: itemsToFix,
+          itemsToReplace: itemsToReplace,
+          totalEstimatedCost: res.overall_project_estimate,
+          generatedDate: new Date().toISOString(),
+          summary: {
+            conditionFlags: flaggedItems.length,
+            lifecycleFlags: itemsToReplace.length,
+            maintenanceFlags: 0
+          }
+        };
+        
+        setAnalysisResults(analysisResults);
+        setError(null);
+        return;
+      }
+      
+      // Transform the breakdown items to FlaggedItem format
+      const flaggedItems = res.itemized_breakdown.map(item => {
+        // Find the corresponding inventory item
+        const inventoryItem = inventoryData.find(inv => 
+          inv.itemName.toLowerCase().includes(item.item_description.toLowerCase()) ||
+          item.item_description.toLowerCase().includes(inv.itemName.toLowerCase())
+        );
+        
+        return {
+          // Map from inventory item if found, otherwise use breakdown data
+          itemId: inventoryItem?.itemId || item.item_description,
+          itemName: inventoryItem?.itemName || item.item_description,
+          category: inventoryItem?.category || 'general',
+          currentCondition: inventoryItem?.currentCondition || 'Poor' as const,
+          purchaseDate: inventoryItem?.purchaseDate || new Date().toISOString().split('T')[0],
+          originalCost: inventoryItem?.originalCost || 0,
+          currentMarketValue: inventoryItem?.currentMarketValue,
+          location: inventoryItem?.location || item.location,
+          description: inventoryItem?.description || item.notes || '',
+          
+          // Flagged item specific properties
+          flagReason: item.issue_type === 'repair' ? 'condition' as const : 'lifecycle' as const,
+          flagDetails: item.notes || `${item.issue_type} recommended due to current condition`,
+          recommendation: item.issue_type === 'repair' ? 'fix' as const : 'replace' as const,
+          estimatedRepairCost: item.issue_type === 'repair' ? item.item_total_cost : undefined,
+          estimatedReplacementCost: item.issue_type === 'replace' ? item.item_total_cost : undefined,
+          repairSteps: item.repair_instructions,
+          estimatedTimeline: '1-2 weeks', // Default timeline
+          costBreakdown: {
+            labor: item.estimated_labor_cost,
+            parts: item.estimated_material_cost
+          }
+        };
+      });
+      
+      const itemsToFix = flaggedItems.filter(item => item.recommendation === 'fix');
+      const itemsToReplace = flaggedItems.filter(item => item.recommendation === 'replace');
+      
       const analysisResults = {
-        total_flagged_items: res.estimate_summary.items_to_repair + res.estimate_summary.items_to_replace,
-        itemsToFix: res.estimate_summary.items_to_repair,
-        itemsToReplace: res.estimate_summary.items_to_replace,
-        totalCost: res.estimate_summary.total_project_cost,
-        summary: res.estimate_summary,
-        itemizedBreakdown: res.itemized_breakdown.map(item => ({
-          item_description: item.item_description,
-          location: item.location,
-          issue_type: item.issue_type,
-          estimated_labor_cost: item.estimated_labor_cost,
-          estimated_material_cost: item.estimated_material_cost,
-          item_total_cost: item.item_total_cost,
-          repair_instructions: item.repair_instructions,
-          notes: item.notes
-        }))
+        totalItems: inventoryData.length,
+        flaggedItems: flaggedItems,
+        itemsToFix: itemsToFix,
+        itemsToReplace: itemsToReplace,
+        totalEstimatedCost: res.overall_project_estimate,
+        generatedDate: new Date().toISOString(),
+        summary: {
+          conditionFlags: itemsToFix.length + itemsToReplace.length,
+          lifecycleFlags: itemsToReplace.length,
+          maintenanceFlags: 0
+        }
       };
+      
       setAnalysisResults(analysisResults);
       setError(null);
     } catch (err) {
@@ -162,11 +259,77 @@ const DataInput: React.FC<DataInputProps> = ({
       onInspectionImported(inspection);
     }
     setSelectedInspection('');
-    await runAnalysis();
+    setTimeout(() => runAnalysis(), 100);
+
   };
 
   const removeItem = (itemId: string) => {
     setInventoryData(inventoryData.filter(item => item.itemId !== itemId));
+  };
+
+  const loadTestData = () => {
+    const testItems: InventoryItem[] = [
+      {
+        itemId: 'test-001',
+        itemName: 'Kitchen Faucet',
+        category: 'plumbing',
+        currentCondition: 'Poor',
+        purchaseDate: '2020-01-15',
+        lastMaintenanceDate: '2022-06-01',
+        originalCost: 150,
+        currentMarketValue: 80,
+        location: 'Kitchen',
+        description: 'Leaking and has mineral buildup'
+      },
+      {
+        itemId: 'test-002',
+        itemName: 'Living Room Carpet',
+        category: 'flooring',
+        currentCondition: 'Damaged',
+        purchaseDate: '2019-03-10',
+        originalCost: 800,
+        currentMarketValue: 200,
+        location: 'Living Room',
+        description: 'Stained and worn in high traffic areas'
+      },
+      {
+        itemId: 'test-003',
+        itemName: 'HVAC Unit',
+        category: 'hvac',
+        currentCondition: 'Non-functional',
+        purchaseDate: '2015-08-20',
+        lastMaintenanceDate: '2023-05-15',
+        originalCost: 3500,
+        currentMarketValue: 500,
+        location: 'Utility Room',
+        description: 'Compressor failed, not cooling properly'
+      },
+      {
+        itemId: 'test-004',
+        itemName: 'Front Door',
+        category: 'general',
+        currentCondition: 'Good',
+        purchaseDate: '2018-11-05',
+        originalCost: 600,
+        currentMarketValue: 450,
+        location: 'Entrance',
+        description: 'Minor scratches but functional'
+      },
+      {
+        itemId: 'test-005',
+        itemName: 'Bathroom Vanity',
+        category: 'general',
+        currentCondition: 'Poor',
+        purchaseDate: '2017-09-12',
+        originalCost: 500,
+        currentMarketValue: 200,
+        location: 'Master Bathroom',
+        description: 'Water damage to cabinet bottom, loose fixtures'
+      }
+    ];
+    
+    setInventoryData([...inventoryData, ...testItems]);
+    setError(null);
   };
 
   return (
@@ -177,10 +340,20 @@ const DataInput: React.FC<DataInputProps> = ({
         </div>
       )}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Data Input</h2>
-        <p className="text-gray-600">
-          Import inventory data from CSV/JSON files or add items manually.
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Data Input</h2>
+            <p className="text-gray-600">
+              Import inventory data from CSV/JSON files or add items manually.
+            </p>
+          </div>
+          <button
+            onClick={loadTestData}
+            className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
+          >
+            Load Test Data
+          </button>
+        </div>
       </div>
 
       {/* Input Method Selection */}
@@ -411,7 +584,7 @@ const DataInput: React.FC<DataInputProps> = ({
               Current Inventory ({inventoryData.length} items)
             </h3>
             <button
-              onClick={runAnalysis}
+              onClick={() => runAnalysis()}
               className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
             >
               Run Analysis
