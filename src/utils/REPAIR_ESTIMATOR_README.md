@@ -76,7 +76,7 @@ interface DetailedEstimate {
 
 ### Basic Usage
 ```typescript
-import { generateDetailedRepairEstimate } from './customRepairEstimator';
+import { generateDetailedRepairEstimate } from '../services/generateEstimate';
 
 const userLocation = {
   city: 'Wichita',
@@ -109,7 +109,7 @@ const estimate = await generateDetailedRepairEstimate(
 The system maintains backward compatibility with the existing `runRepairEstimatorAgent` function:
 
 ```typescript
-import { runRepairEstimatorAgent } from './customRepairEstimator';
+import { runRepairEstimatorAgent } from '../services/generateEstimate';
 
 const result = await runRepairEstimatorAgent(
   inventoryItems,
