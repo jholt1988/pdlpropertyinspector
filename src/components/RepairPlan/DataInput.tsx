@@ -492,7 +492,9 @@ const DataInput: React.FC<DataInputProps> = ({
               Current Inventory ({inventoryData.length} items)
             </h3>
             <button
-              onClick={() => runAnalysis()}
+              onClick={runAnalysis
+              }
+              type='button'
               className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
             >
               Run Analysis
