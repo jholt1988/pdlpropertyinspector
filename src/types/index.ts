@@ -94,6 +94,13 @@ export interface EstimateLine {
 
 export interface EstimateResult {
   overall_project_estimate: number;
+  estimate_summary:{
+    total_labor_cost: number;
+    total_material_cost: number;
+    total_project_cost: number;
+    items_to_repair: number;
+    items_to_replace: number;
+  }
   itemized_breakdown: EstimateLine[];
   metadata: {
     creation_date: string;

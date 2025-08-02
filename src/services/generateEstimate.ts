@@ -66,6 +66,13 @@ export async function runRepairEstimatorAgent(
 
   return {
     overall_project_estimate: detailedEstimate.summary.total_project_cost,
+    estimate_summary: {
+      total_labor_cost: detailedEstimate.summary.total_labor_cost,
+      total_material_cost: detailedEstimate.summary.total_material_cost,
+      total_project_cost: detailedEstimate.summary.total_project_cost,
+      items_to_repair: detailedEstimate.summary.items_to_repair,
+      items_to_replace: detailedEstimate.summary.items_to_replace
+    },
     itemized_breakdown: detailedEstimate.line_items.map(item => ({
       item_description: item.item_description,
       location: item.location,

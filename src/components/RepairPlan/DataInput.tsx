@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Upload, Plus, FileText, Database, Trash2 } from 'lucide-react';
 import { InventoryItem, SystemConfig, AnalysisResult, Inspection } from '../../types';
-import { analyzeInventoryAndGeneratePlan } from '../../utils/analysisEngine';
+import { runRepairEstimatorAgent } from '../../services/generateEstimate';
 import { useStorage } from '../../contexts/StorageContext';
 import { inspectionToInventoryItems } from '../../utils/inspectionConverter';
 
@@ -117,9 +117,28 @@ const DataInput: React.FC<DataInputProps> = ({
     }
 
     const results = async () => {
-      return  await analyzeInventoryAndGeneratePlan(inventoryData, systemConfig);
+      return  await runRepairEstimatorAgent(inventoryData, "", 'USD' );
     };
-    setAnalysisResults(await results());
+    const analysisResults = await results().then((res) => {
+      return {
+        total_flagged_items: res.estimate_summary.items_to_repair + res.estimate_summary.items_to_replace,
+        itemsToFix: res.estimate_summary.items_to_repair,
+        itemsToReplace: res.estimate_summary.items_to_replace,
+        totalCost: res.estimate_summary.total_project_cost,
+        summary: res.estimate_summary,
+        itemizedBreakdown: res.itemized_breakdown.map(item => ({
+          item_description: item.item_description,
+          location: item.location,
+          issue_type: item.issue_type,
+          estimated_labor_cost: item.estimated_labor_cost,
+          estimated_material_cost: item.estimated_material_cost,
+          item_total_cost: item.item_total_cost,
+          repair_instructions: item.repair_instructions,
+          notes: item.notes
+        }))
+      }
+    });
+    setAnalysisResults(analysisResults);
   };
 
   const importFromInspection = async () => {
