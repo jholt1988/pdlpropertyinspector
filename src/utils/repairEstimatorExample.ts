@@ -1,4 +1,4 @@
-import { generateDetailedRepairEstimate } from './customRepairEstimator';
+import { generateDetailedRepairEstimate } from '../services/generateEstimate';
 import { InventoryItem, UserLocation, EstimateLineItem } from '../types';
 
 // Example usage of the refactored repair estimator
