@@ -11,8 +11,10 @@ import { generateInspectionId } from '../utils/idGenerator';
 import { runRepairEstimatorAgent } from '../services/generateEstimate';
 
 
+type TabId = 'dashboard' | 'input' | 'analysis' | 'report' | 'settings';
+
 function ProjectPage() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'input' | 'analysis' | 'report' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<TabId>('dashboard');
   const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
   const [analysisResults, setAnalysisResults] = useState<AnalysisResult | null>(null);
   const [currentInspection, setCurrentInspection] = useState<Inspection | null>(null);
@@ -69,7 +71,7 @@ function ProjectPage() {
     alert('Repair plan saved');
   };
 
-  const navigation = [
+  const navigation: { id: TabId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'input', label: 'Data Input', icon: Database },
     { id: 'analysis', label: 'Analysis Results', icon: BarChart3 },
@@ -127,7 +129,7 @@ function ProjectPage() {
                 return (
                   <button
                     key={item.id}
-                    onClick={() => setActiveTab(item.id as any)}
+                    onClick={() => setActiveTab(item.id)}
                     className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                       activeTab === item.id
                         ? 'bg-blue-50 text-blue-700 border-blue-200'

@@ -589,12 +589,12 @@ export function generateRoomTemplate(roomType: string, roomName: string): Room {
   const checklistItems = ROOM_TEMPLATES[roomType] || ROOM_TEMPLATES.living_room;
   
   return {
-    id: `room_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    id: `room_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
     name: roomName,
     type: roomType as any,
     checklistItems: checklistItems.map(item => ({
       ...item,
-      id: `${item.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: `${item.id}_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
     })),
   };
 }

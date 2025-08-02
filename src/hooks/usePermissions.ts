@@ -83,9 +83,25 @@ export function usePermissions() {
 }
 
 // Helper function to check ownership
-function checkOwnership(_resource: string, _resourceId: string | undefined, _userId: string): boolean {
-  // This would typically query your database to check ownership
-  // For now, returning true as a placeholder
-  // In a real app, you'd check if the user owns the resource
-  return true;
+function checkOwnership(resource: string, resourceId: string | undefined, userId: string): boolean {
+  if (!resourceId) return false;
+  try {
+    const items = JSON.parse(localStorage.getItem(`${resource}s`) || '[]');
+    const record = items.find((i: any) => i.id === resourceId);
+    if (!record) return false;
+    switch (resource) {
+      case 'property':
+        return record.managedBy === userId || record.owner === userId;
+      case 'inspection':
+        return (
+          record.inspector?.id === userId ||
+          record.tenant?.id === userId ||
+          record.landlord?.id === userId
+        );
+      default:
+        return false;
+    }
+  } catch {
+    return false;
+  }
 }

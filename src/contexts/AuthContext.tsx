@@ -1,18 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: 'property_manager' | 'landlord' | 'tenant' | 'maintenance';
-  company?: string;
-  phone?: string;
-  avatar?: string;
-  createdAt: string;
-  lastLogin?: string;
-  emailVerified: boolean;
-  provider: 'email' | 'google' | 'microsoft' | 'apple';
-}
+import { User } from '../types/user';
 
 interface AuthContextType {
   user: User | null;
@@ -215,7 +202,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Create new user
       const newUser = {
-        id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        id: `user_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
         email: userData.email,
         password: userData.password, // In real app, this would be hashed
         name: userData.name,
@@ -225,7 +212,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         createdAt: new Date().toISOString(),
         emailVerified: false,
         provider: 'email',
-        verificationToken: `verify_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        verificationToken: `verify_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
       };
       
       // Store user
@@ -311,7 +298,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     
     // Generate new verification token
-    const newToken = `verify_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const newToken = `verify_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
     foundUser.verificationToken = newToken;
     
     const updatedUsers = storedUsers.map((u: any) => 

@@ -146,7 +146,7 @@ export function NewInspectionPage() {
       };
 
       const newInspection: Inspection = {
-        id: `insp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        id: `insp_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
         propertyId: selectedProperty.id,
         type: selectedType as any,
         status: 'in-progress',
