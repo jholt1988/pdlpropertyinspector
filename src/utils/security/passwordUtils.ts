@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import { randomInt } from 'crypto';
 
 // Password strength requirements
 export const PASSWORD_REQUIREMENTS = {
@@ -121,21 +122,26 @@ export function generateSecurePassword(length: number = 12): string {
   const lowercase = 'abcdefghijklmnopqrstuvwxyz';
   const numbers = '0123456789';
   const special = '!@#$%^&*()_+-=[]{}|;:,.<>?';
-  
+
   const allChars = uppercase + lowercase + numbers + special;
-  let password = '';
-  
+  let passwordArray: string[] = [];
+
   // Ensure at least one character from each category
-  password += uppercase[Math.floor(Math.random() * uppercase.length)];
-  password += lowercase[Math.floor(Math.random() * lowercase.length)];
-  password += numbers[Math.floor(Math.random() * numbers.length)];
-  password += special[Math.floor(Math.random() * special.length)];
-  
+  passwordArray.push(uppercase[randomInt(uppercase.length)]);
+  passwordArray.push(lowercase[randomInt(lowercase.length)]);
+  passwordArray.push(numbers[randomInt(numbers.length)]);
+  passwordArray.push(special[randomInt(special.length)]);
+
   // Fill remaining length with random characters
-  for (let i = password.length; i < length; i++) {
-    password += allChars[Math.floor(Math.random() * allChars.length)];
+  for (let i = passwordArray.length; i < length; i++) {
+    passwordArray.push(allChars[randomInt(allChars.length)]);
   }
-  
-  // Shuffle the password to avoid predictable patterns
-  return password.split('').sort(() => Math.random() - 0.5).join('');
+
+  // Fisher-Yates shuffle for better randomness
+  for (let i = passwordArray.length - 1; i > 0; i--) {
+    const j = randomInt(i + 1);
+    [passwordArray[i], passwordArray[j]] = [passwordArray[j], passwordArray[i]];
+  }
+
+  return passwordArray.join('');
 }

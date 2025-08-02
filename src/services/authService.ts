@@ -1,26 +1,17 @@
-import { 
-  generateAccessToken, 
-  generateRefreshToken, 
-  verifyRefreshToken, 
-  generateSessionId, 
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+  generateSessionId,
   generateTokenFamily
 } from '../utils/security/jwtUtils';
 import { hashPassword, verifyPassword } from '../utils/security/passwordUtils';
 import { validateRegistrationData, validateLoginCredentials } from '../utils/security/inputValidation';
 import { loginRateLimiter, registrationRateLimiter, passwordResetRateLimiter } from '../utils/security/rateLimiter';
+import { randomBytes } from 'crypto';
+import { User } from '../types/user';
 
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: 'property_manager' | 'landlord' | 'tenant' | 'maintenance';
-  company?: string;
-  phone?: string;
-  avatar?: string;
-  createdAt: string;
-  lastLogin?: string;
-  emailVerified: boolean;
-  provider: 'email' | 'google' | 'microsoft' | 'apple';
+export interface StoredUser extends User {
   passwordHash?: string;
   isActive: boolean;
   failedLoginAttempts: number;
@@ -32,7 +23,7 @@ export interface User {
 
 export interface LoginResult {
   success: boolean;
-  user?: Omit<User, 'passwordHash'>;
+  user?: User;
   accessToken?: string;
   refreshToken?: string;
   error?: string;
@@ -42,19 +33,19 @@ export interface LoginResult {
 
 export interface RegisterResult {
   success: boolean;
-  user?: Omit<User, 'passwordHash'>;
+  user?: User;
   error?: string;
   rateLimited?: boolean;
   needsEmailVerification?: boolean;
 }
 
 export class AuthService {
-  private users: Map<string, User> = new Map();
+  private users: Map<string, StoredUser> = new Map();
   private sessions: Map<string, { userId: string; tokenFamily: string; createdAt: string }> = new Map();
 
   constructor() {
     this.loadUsers();
-    this.initializeDemoUsers();
+    void this.initializeDemoUsers().catch(err => console.error('Demo user init error:', err));
   }
 
   /**
@@ -107,8 +98,8 @@ export class AuthService {
       const emailVerificationToken = this.generateSecureToken();
 
       // Create new user
-      const newUser: User = {
-        id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      const newUser: StoredUser = {
+        id: `user_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
         email: sanitizedData.email,
         name: sanitizedData.name,
         role: userData.role,
@@ -128,11 +119,19 @@ export class AuthService {
       this.saveUsers();
 
       // Remove sensitive data from response
-      const { passwordHash: _, emailVerificationToken: __, ...userResponse } = newUser;
+      const {
+        passwordHash: _,
+        emailVerificationToken: __,
+        passwordResetToken: ___,
+        passwordResetExpires: ____,
+        isActive: _____,
+        failedLoginAttempts: ______,
+        ...userResponse
+      } = newUser;
 
       return {
         success: true,
-        user: userResponse,
+        user: userResponse as User,
         needsEmailVerification: true,
       };
     } catch (error) {
@@ -256,11 +255,19 @@ export class AuthService {
       });
 
       // Remove sensitive data from response
-      const { passwordHash, emailVerificationToken, passwordResetToken, ...userResponse } = user;
+      const {
+        passwordHash,
+        emailVerificationToken,
+        passwordResetToken,
+        passwordResetExpires,
+        isActive,
+        failedLoginAttempts,
+        ...userResponse
+      } = user;
 
       return {
         success: true,
-        user: userResponse,
+        user: userResponse as User,
         accessToken,
         refreshToken,
       };
@@ -381,14 +388,14 @@ export class AuthService {
   /**
    * Gets user by ID
    */
-  getUserById(userId: string): User | undefined {
+  getUserById(userId: string): StoredUser | undefined {
     return this.users.get(userId);
   }
 
   /**
    * Updates user profile
    */
-  async updateProfile(userId: string, updates: Partial<User>): Promise<{ success: boolean; error?: string; user?: Omit<User, 'passwordHash'> }> {
+  async updateProfile(userId: string, updates: Partial<User>): Promise<{ success: boolean; error?: string; user?: Omit<StoredUser, 'passwordHash' | 'emailVerificationToken' | 'passwordResetToken' | 'passwordResetExpires'> }> {
     try {
       const user = this.users.get(userId);
       if (!user) {
@@ -401,8 +408,16 @@ export class AuthService {
       this.saveUsers();
 
       // Return user without sensitive data
-      const { passwordHash, emailVerificationToken, passwordResetToken, ...userResponse } = updatedUser;
-      return { success: true, user: userResponse };
+      const {
+        passwordHash,
+        emailVerificationToken,
+        passwordResetToken,
+        passwordResetExpires,
+        isActive,
+        failedLoginAttempts,
+        ...userResponse
+      } = updatedUser;
+      return { success: true, user: userResponse as User };
     } catch (error) {
       console.error('Profile update error:', error);
       return { success: false, error: 'Failed to update profile' };
@@ -410,12 +425,11 @@ export class AuthService {
   }
 
   // Helper methods
-  private findUserByEmail(email: string): User | undefined {
+  private findUserByEmail(email: string): StoredUser | undefined {
     return Array.from(this.users.values()).find(user => user.email === email.toLowerCase());
   }
-
-  private generateSecureToken(): string {
-    return `${Date.now()}_${Math.random().toString(36).substr(2, 32)}`;
+  private generateSecureToken(length = 32): string {
+    return randomBytes(length).toString('hex');
   }
 
   private invalidateUserSessions(userId: string): void {
@@ -431,7 +445,7 @@ export class AuthService {
       const stored = localStorage.getItem('secure_users');
       if (stored) {
         const usersArray = JSON.parse(stored);
-        usersArray.forEach((user: User) => {
+        usersArray.forEach((user: StoredUser) => {
           this.users.set(user.id, user);
         });
       }
@@ -449,7 +463,7 @@ export class AuthService {
     }
   }
 
-  private initializeDemoUsers(): void {
+  private async initializeDemoUsers(): Promise<void> {
     // Only initialize if no users exist
     if (this.users.size > 0) return;
 
@@ -472,14 +486,13 @@ export class AuthService {
       },
     ];
 
-    demoUsers.forEach(async (demoUser) => {
+    for (const demoUser of demoUsers) {
       try {
         await this.register({
           ...demoUser,
           confirmPassword: demoUser.password,
         });
 
-        // Auto-verify demo users
         const user = this.findUserByEmail(demoUser.email);
         if (user) {
           user.emailVerified = true;
@@ -489,7 +502,7 @@ export class AuthService {
       } catch (error) {
         console.error('Error creating demo user:', error);
       }
-    });
+    }
 
     this.saveUsers();
   }

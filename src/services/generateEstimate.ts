@@ -6,15 +6,36 @@ import { InventoryItem, DetailedEstimate, EstimateLine, EstimateResult, UserLoca
 
 // Set OpenAI client
 const apiKey: string | undefined = import.meta.env.VITE_OPENAI_API_KEY;
-if (!apiKey) throw new Error('Missing OpenAI API Key');
-const openai = new OpenAI({ apiKey, dangerouslyAllowBrowser: true });
-setDefaultOpenAIClient(openai);
+let openai: OpenAI | null = null;
+if (apiKey) {
+  openai = new OpenAI({ apiKey });
+  setDefaultOpenAIClient(openai);
+}
 
 export async function generateDetailedRepairEstimate(
   inventoryItems: InventoryItem[],
   userLocation: UserLocation,
   currency = 'USD'
 ): Promise<DetailedEstimate> {
+  if (!openai) {
+    return {
+      line_items: [],
+      summary: {
+        total_labor_cost: 0,
+        total_material_cost: 0,
+        total_project_cost: 0,
+        items_to_repair: 0,
+        items_to_replace: 0
+      },
+      metadata: {
+        user_location: userLocation,
+        currency,
+        generated_date: new Date().toISOString(),
+        disclaimer: 'OpenAI API key not configured; using mock estimate.'
+      }
+    };
+  }
+
   const agent = createRepairEstimatorAgent(userLocation);
 
   const prompt = `Analyze the following items and generate a detailed estimate for ${userLocation.city}, ${userLocation.region}:
