@@ -8,7 +8,7 @@ import {
   EstimateLineItem,
   DetailedEstimate
 } from '../types';
-import { createRepairEstimatorAgent } from '../agent/repairEstimateAgents';
+import { createRepairEstimatorAgent } from '../agent/repairEstimateAgent';
 
 
 // @ts-ignore - Vite env variables can be undefined

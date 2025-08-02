@@ -1,7 +1,7 @@
 // services/generateEstimate.ts
 import OpenAI from 'openai';
 import { setDefaultOpenAIClient, run } from '@openai/agents';
-import { createRepairEstimatorAgent } from '../agent/repairEstimatorAgent';
+import { createRepairEstimatorAgent } from '../agent/repairEstimateAgent';
 import { InventoryItem, DetailedEstimate, EstimateLine, EstimateResult, UserLocation } from '../types';
 
 // Set OpenAI client
