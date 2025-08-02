@@ -53,7 +53,7 @@ function ProjectPage() {
       location: item.location || 'unknown',
       issue_type: item.flagReason
     }));
-    const estimate = await runRepairEstimatorAgent(estimateData, 'US');
+    const estimate = await runRepairEstimatorAgent(estimateData,"", 'USD');
     console.log(estimate.overall_project_estimate);
     const plan: RepairPlan = {
       id: generateInspectionId('plan_'),
