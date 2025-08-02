@@ -1,5 +1,5 @@
-import { FlaggedItem, EstimateLine, EstimateResult, InventoryItem,  } from '../types';
-import { runRepairEstimatorAgent } from './customRepairEstimator';
+import { FlaggedItem, EstimateResult, InventoryItem } from '../types';
+import { runRepairEstimatorAgent } from '../services/generateEstimate';
 
 export interface InspectionItem extends InventoryItem {
 

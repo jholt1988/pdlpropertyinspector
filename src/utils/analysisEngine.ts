@@ -5,7 +5,7 @@ import {
   SystemConfig,
   UserLocation
 } from '../types';
-import { generateDetailedRepairEstimate } from './customRepairEstimator';
+import { generateDetailedRepairEstimate } from '../services/generateEstimate';
 
 export const analyzeInventoryAndGeneratePlan = async (
   inventory: InventoryItem[],

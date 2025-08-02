@@ -3,7 +3,7 @@ import { Agent, webSearchTool } from '@openai/agents';
 import { UserLocation } from '../types';
 import { createLaborCostTool } from '../tools/laborCostTool';
 import { createMaterialCostTool } from '../tools/materialCostTool';
-import { createRepairInstructionsTool } from '../tools/repairInstructionTool';
+import { createRepairInstructionsTool } from '../tools/repairInstructionsTool';
 
 export function createRepairEstimatorAgent(userLocation: UserLocation): Agent {
   return new Agent({
