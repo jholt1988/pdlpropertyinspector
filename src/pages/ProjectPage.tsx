@@ -96,7 +96,6 @@ function ProjectPage() {
           inventoryData={inventoryData}
           setInventoryData={setInventoryData}
           setAnalysisResults={setAnalysisResults}
-          systemConfig={systemConfig}
           onInspectionImported={setCurrentInspection}
         />;
       case 'analysis':

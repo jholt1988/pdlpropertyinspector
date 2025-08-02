@@ -8,7 +8,7 @@ import {
 import { hashPassword, verifyPassword } from '../utils/security/passwordUtils';
 import { validateRegistrationData, validateLoginCredentials } from '../utils/security/inputValidation';
 import { loginRateLimiter, registrationRateLimiter, passwordResetRateLimiter } from '../utils/security/rateLimiter';
-import { randomBytes } from 'crypto';
+import { getSecureRandomInt } from '../utils/security/passwordUtils';
 import { User } from '../types/user';
 
 export interface StoredUser extends User {

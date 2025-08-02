@@ -73,7 +73,7 @@ ${analysisResults.itemsToFix.map(item => `
 ${item.flagDetails}
 
 **Recommended Repair Steps:**
-${item.repair_instructions ? item.repair_instructions.map((step, index) => `${index + 1}. ${step}`).join('\n') : 'Detailed repair steps to be determined by qualified technician.'}
+${item.repairSteps ? item.repairSteps.map((step, index) => `${index + 1}. ${step}`).join('\n') : 'Detailed repair steps to be determined by qualified technician.'}
 
 **Required Resources:**
 ${item.requiredResources ? item.requiredResources.map(resource => `- ${resource}`).join('\n') : '- Professional assessment required for specific resource determination'}

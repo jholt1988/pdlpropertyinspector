@@ -105,19 +105,23 @@ Currency: ${currency}`;
 
   try {
     const response = await run(agent, prompt);
-    console.log('Detailed Repair Estimator Response:', response.finalOutput);
-    const parsed = typeof response === 'string' ? JSON.parse(response.finalOutput) : response.finalOutput;
+    console.log('Detailed Repair Estimator Response:', response);
+    const parsed = typeof response === 'string' ? JSON.parse(response) : response;
     console.log('Parsed Estimate:', parsed);
     
     // Transform the response to match our DetailedEstimate interface
-    const transformedResponse = {
+    const transformedResponse: DetailedEstimate = {
       line_items: parsed.line_items || [],
       summary: {
         totalFixCost: parsed.summary?.totalFixCost || 0,
         totalReplaceCost: parsed.summary?.totalReplaceCost || 0,
         totalRecommendedCost: parsed.summary?.totalRecommendedCost || 0,
         overallRecommendation: parsed.summary?.overallRecommendation || 'Review recommendations',
-        total_labor_cost: parsed.summary?.totalRecommendedCost || 0,
+        total_labor_cost: parsed.summary?.total_labor_cost || 0,
+        total_material_cost: parsed.summary?.total_material_cost || 0,
+        total_project_cost: parsed.summary?.total_project_cost || parsed.summary?.totalRecommendedCost || 0,
+        items_to_repair: parsed.summary?.items_to_repair || 0,
+        items_to_replace: parsed.summary?.items_to_replace || 0
       },
       metadata: {
         user_location: userLocation,
@@ -159,6 +163,11 @@ export async function runRepairEstimatorAgent(
       item_description: item.itemName,
       location: item.location || 'General',
       issue_type: item.recommendedAction.toLowerCase() === 'fix' ? 'repair' : 'replace',
+      recommended_action: item.recommendedAction,
+      estimated_hours: item.recommendedAction.toLowerCase() === 'fix'
+        ? (item.fix?.laborHours || 0)
+        : (item.replace?.laborHours || 0),
+        category: item.category,
       estimated_labor_cost: item.recommendedAction.toLowerCase() === 'fix' 
         ? (item.fix?.laborHours || 0) * (item.fix?.laborRate || 0)
         : (item.replace?.laborHours || 0) * (item.replace?.laborRate || 0),

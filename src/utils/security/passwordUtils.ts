@@ -1,5 +1,14 @@
 import bcrypt from 'bcryptjs';
-import { randomInt } from 'crypto';
+
+/**
+ * Generates a cryptographically secure random integer between 0 (inclusive) and max (exclusive)
+ * Browser-compatible alternative to crypto.randomInt
+ */
+export function getSecureRandomInt(max: number): number {
+  const array = new Uint32Array(1);
+  crypto.getRandomValues(array);
+  return array[0] % max;
+}
 
 // Password strength requirements
 export const PASSWORD_REQUIREMENTS = {
@@ -127,19 +136,19 @@ export function generateSecurePassword(length: number = 12): string {
   let passwordArray: string[] = [];
 
   // Ensure at least one character from each category
-  passwordArray.push(uppercase[randomInt(uppercase.length)]);
-  passwordArray.push(lowercase[randomInt(lowercase.length)]);
-  passwordArray.push(numbers[randomInt(numbers.length)]);
-  passwordArray.push(special[randomInt(special.length)]);
+  passwordArray.push(uppercase[getSecureRandomInt(uppercase.length)]);
+  passwordArray.push(lowercase[getSecureRandomInt(lowercase.length)]);
+  passwordArray.push(numbers[getSecureRandomInt(numbers.length)]);
+  passwordArray.push(special[getSecureRandomInt(special.length)]);
 
   // Fill remaining length with random characters
   for (let i = passwordArray.length; i < length; i++) {
-    passwordArray.push(allChars[randomInt(allChars.length)]);
+    passwordArray.push(allChars[getSecureRandomInt(allChars.length)]);
   }
 
   // Fisher-Yates shuffle for better randomness
   for (let i = passwordArray.length - 1; i > 0; i--) {
-    const j = randomInt(i + 1);
+    const j = getSecureRandomInt(i + 1);
     [passwordArray[i], passwordArray[j]] = [passwordArray[j], passwordArray[i]];
   }
 

@@ -1,15 +1,15 @@
 import React, { useState, useRef } from 'react';
 import { Upload, Plus, FileText, Database, Trash2 } from 'lucide-react';
-import { InventoryItem, SystemConfig, AnalysisResult, Inspection } from '../../types';
+import { InventoryItem, AnalysisResult, Inspection } from '../../types';
 import { runRepairEstimatorAgent } from '../../services/generateEstimate';
 import { useStorage } from '../../contexts/StorageContext';
 import { inspectionToInventoryItems } from '../../utils/inspectionConverter';
+import { createAnalysisResultFromEstimateResult, createFallbackAnalysisResult } from '../../utils/dataNormalization';
 
 interface DataInputProps {
   inventoryData: InventoryItem[];
   setInventoryData: (data: InventoryItem[]) => void;
   setAnalysisResults: (results: AnalysisResult) => void;
-  systemConfig: SystemConfig;
   onInspectionImported?: (inspection: Inspection) => void;
 }
 
@@ -17,7 +17,6 @@ const DataInput: React.FC<DataInputProps> = ({
   inventoryData,
   setInventoryData,
   setAnalysisResults,
-  systemConfig,
   onInspectionImported
 }) => {
   const [inputMethod, setInputMethod] = useState<'csv' | 'json' | 'manual'>('csv');
@@ -128,116 +127,25 @@ const DataInput: React.FC<DataInputProps> = ({
       
       // Check if we have breakdown data
       if (!res.itemized_breakdown || res.itemized_breakdown.length === 0) {
-        console.log('No itemized breakdown found, creating flagged items from inventory data');
+        console.log('No itemized breakdown found, creating fallback analysis');
         
-        // If no breakdown, create flagged items from inventory data with poor conditions
-        const flaggedItems = inventoryData
-          .filter(item => item.currentCondition === 'Poor' || item.currentCondition === 'Damaged' || item.currentCondition === 'Non-functional')
-          .map(item => ({
-            // Map from inventory item
-            itemId: item.itemId,
-            itemName: item.itemName,
-            category: item.category,
-            currentCondition: item.currentCondition,
-            purchaseDate: item.purchaseDate,
-            originalCost: item.originalCost,
-            currentMarketValue: item.currentMarketValue,
-            location: item.location,
-            description: item.description,
-            
-            // Flagged item specific properties
-            flagReason: 'condition' as const,
-            flagDetails: `Item condition is ${item.currentCondition}`,
-            recommendation: item.currentCondition === 'Non-functional' ? 'replace' as const : 'fix' as const,
-            estimatedRepairCost: item.currentCondition !== 'Non-functional' ? 150 : undefined,
-            estimatedReplacementCost: item.currentCondition === 'Non-functional' ? 500 : undefined,
-            repairSteps: [`Assess ${item.itemName}`, `${item.currentCondition === 'Non-functional' ? 'Replace' : 'Repair'} ${item.itemName}`],
-            estimatedTimeline: '1-2 weeks',
-            costBreakdown: {
-              labor: item.currentCondition === 'Non-functional' ? 200 : 100,
-              parts: item.currentCondition === 'Non-functional' ? 300 : 50
-            }
-          }));
-          
-        const itemsToFix = flaggedItems.filter(item => item.recommendation === 'fix');
-        const itemsToReplace = flaggedItems.filter(item => item.recommendation === 'replace');
-        
-        const analysisResults = {
-          totalItems: inventoryData.length,
-          flaggedItems: flaggedItems,
-          itemsToFix: itemsToFix,
-          itemsToReplace: itemsToReplace,
-          totalEstimatedCost: res.overall_project_estimate,
-          generatedDate: new Date().toISOString(),
-          summary: {
-            conditionFlags: flaggedItems.length,
-            lifecycleFlags: itemsToReplace.length,
-            maintenanceFlags: 0
-          }
-        };
-        
+        // Use fallback analysis result
+        const analysisResults = createFallbackAnalysisResult(inventoryData);
         setAnalysisResults(analysisResults);
         setError(null);
         return;
       }
       
-      // Transform the breakdown items to FlaggedItem format
-      const flaggedItems = res.itemized_breakdown.map(item => {
-        // Find the corresponding inventory item
-        const inventoryItem = inventoryData.find(inv => 
-          inv.itemName.toLowerCase().includes(item.item_description.toLowerCase()) ||
-          item.item_description.toLowerCase().includes(inv.itemName.toLowerCase())
-        );
-        
-        return {
-          // Map from inventory item if found, otherwise use breakdown data
-          itemId: inventoryItem?.itemId || item.item_description,
-          itemName: inventoryItem?.itemName || item.item_description,
-          category: inventoryItem?.category || 'general',
-          currentCondition: inventoryItem?.currentCondition || 'Poor' as const,
-          purchaseDate: inventoryItem?.purchaseDate || new Date().toISOString().split('T')[0],
-          originalCost: inventoryItem?.originalCost || 0,
-          currentMarketValue: inventoryItem?.currentMarketValue,
-          location: inventoryItem?.location || item.location,
-          description: inventoryItem?.description || item.notes || '',
-          
-          // Flagged item specific properties
-          flagReason: item.issue_type === 'repair' ? 'condition' as const : 'lifecycle' as const,
-          flagDetails: item.notes || `${item.issue_type} recommended due to current condition`,
-          recommendation: item.issue_type === 'repair' ? 'fix' as const : 'replace' as const,
-          estimatedRepairCost: item.issue_type === 'repair' ? item.item_total_cost : undefined,
-          estimatedReplacementCost: item.issue_type === 'replace' ? item.item_total_cost : undefined,
-          repairSteps: item.repair_instructions,
-          estimatedTimeline: '1-2 weeks', // Default timeline
-          costBreakdown: {
-            labor: item.estimated_labor_cost,
-            parts: item.estimated_material_cost
-          }
-        };
-      });
-      
-      const itemsToFix = flaggedItems.filter(item => item.recommendation === 'fix');
-      const itemsToReplace = flaggedItems.filter(item => item.recommendation === 'replace');
-      
-      const analysisResults = {
-        totalItems: inventoryData.length,
-        flaggedItems: flaggedItems,
-        itemsToFix: itemsToFix,
-        itemsToReplace: itemsToReplace,
-        totalEstimatedCost: res.overall_project_estimate,
-        generatedDate: new Date().toISOString(),
-        summary: {
-          conditionFlags: itemsToFix.length + itemsToReplace.length,
-          lifecycleFlags: itemsToReplace.length,
-          maintenanceFlags: 0
-        }
-      };
-      
+      // Use the normalization utility to create analysis results
+      const analysisResults = createAnalysisResultFromEstimateResult(res, inventoryData);
       setAnalysisResults(analysisResults);
       setError(null);
     } catch (err) {
       console.error('Analysis error:', err);
-      setError('Failed to run analysis');
+      // Fallback to basic analysis on error
+      const fallbackResults = createFallbackAnalysisResult(inventoryData);
+      setAnalysisResults(fallbackResults);
+      setError(null);
     }
   };
 
