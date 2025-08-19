@@ -5,12 +5,9 @@ import { createRepairEstimatorAgent } from '../agent/repairEstimateAgent';
 import { InventoryItem, DetailedEstimate, EstimateLineItem, EstimateResult, UserLocation } from '../types';
 
 // Set OpenAI client
-const apiKey = import.meta.env?.VITE_OPENAI_API_KEY;
-let openai: OpenAI | null = null;
-if (apiKey && typeof apiKey === 'string' && apiKey.length > 0) {
-  openai = new OpenAI({ apiKey, dangerouslyAllowBrowser: true });
-  setDefaultOpenAIClient(openai);
-}
+const apiKey = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.VITE_OPENAI_API_KEY : undefined;
+const openai = new OpenAI({ apiKey });
+
 
 export async function generateDetailedRepairEstimate(
   inventoryItems: InventoryItem[],
@@ -104,14 +101,14 @@ ${JSON.stringify(
 Currency: ${currency}`;
 
   try {
-    const response = await run(agent, prompt);
-    console.log('Detailed Repair Estimator Response:', response.finalOutput);
-    const parsed = typeof response === 'string' ? JSON.parse(response.finalOutput) : response;
+    const response =  (await run(agent, prompt).then(res => res.finalOutput )) as string;
+    console.log('Detailed Repair Estimator Response:', response);
+    const parsed : DetailedEstimate = JSON.parse(response);
     console.log('Parsed Estimate:', parsed);
     
     // Transform the response to match our DetailedEstimate interface
     const transformedResponse: DetailedEstimate = {
-      line_items: parsed.line_items || [],
+      line_items: parsed?.line_items || [],
       summary: {
         totalFixCost: parsed.summary?.totalFixCost || 0,
         totalReplaceCost: parsed.summary?.totalReplaceCost || 0,

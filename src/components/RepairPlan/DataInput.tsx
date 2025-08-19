@@ -124,6 +124,8 @@ const DataInput: React.FC<DataInputProps> = ({
       const res = await runRepairEstimatorAgent(inventoryData, 'Wichita, Kansas', 'USD');
       
       console.log('Estimate result:', res); // Debug log
+      const itemized_breakdown = res.itemized_breakdown || [];
+      setAnalysisResults(itemized_breakdown.length > 0 ? createAnalysisResultFromEstimateResult(res, inventoryData) : createFallbackAnalysisResult(inventoryData));
       
       // Check if we have breakdown data
       if (!res.itemized_breakdown || res.itemized_breakdown.length === 0) {
