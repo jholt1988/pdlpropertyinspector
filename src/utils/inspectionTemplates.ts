@@ -177,11 +177,17 @@ export const ROOM_TEMPLATES: Record<string, ChecklistItem[]> = {
     {
       id: 'bt_plumbing',
       category: 'Plumbing',
-      item: 'Sink, toilet, shower/tub functionality',
+      item: 'Bathroom fixtures',
       condition: null,
       notes: '',
       photos: [],
       requiresAction: false,
+      // Individual fixtures tracked separately
+      subItems: [
+        { id: 'sink', name: 'Sink', condition: null },
+        { id: 'toilet', name: 'Toilet', condition: null },
+        { id: 'shower', name: 'Shower/Tub', condition: null }
+      ],
     },
     {
       id: 'bt_tiles',
@@ -233,11 +239,18 @@ export const ROOM_TEMPLATES: Record<string, ChecklistItem[]> = {
     {
       id: 'kt_appliances',
       category: 'Appliances',
-      item: 'Refrigerator, stove, dishwasher, microwave',
+      item: 'Kitchen appliances',
       condition: null,
       notes: '',
       photos: [],
       requiresAction: false,
+      // Submenu entries for each appliance so users can rate them individually
+      subItems: [
+        { id: 'fridge', name: 'Refrigerator', condition: null },
+        { id: 'stove', name: 'Stove', condition: null },
+        { id: 'dishwasher', name: 'Dishwasher', condition: null },
+        { id: 'microwave', name: 'Microwave', condition: null }
+      ],
     },
     {
       id: 'kt_counters',
@@ -374,11 +387,16 @@ export const ROOM_TEMPLATES: Record<string, ChecklistItem[]> = {
     {
       id: 'ut_washer_dryer',
       category: 'Appliances',
-      item: 'Washer/dryer connections and hookups',
+      item: 'Washer and dryer',
       condition: null,
       notes: '',
       photos: [],
       requiresAction: false,
+      // Split washer and dryer so each can record its age and condition
+      subItems: [
+        { id: 'washer', name: 'Washer', condition: null },
+        { id: 'dryer', name: 'Dryer', condition: null }
+      ],
     },
     {
       id: 'ut_water_heater',

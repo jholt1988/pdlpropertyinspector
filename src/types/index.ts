@@ -35,8 +35,26 @@ export interface ChecklistItem {
   condition: 'excellent' | 'good' | 'fair' | 'poor' | null;
   notes: string;
   photos: string[];
-  damageEstimate?: number;
+  /**
+   * Approximate age of the inspected item in years. This replaces the old
+   * damageEstimate cost field so the inspection can track lifecycle instead of
+   * price.
+   */
+  estimatedAge?: number;
+  /** Optional list of sub-items for grouped checklist entries */
+  subItems?: ChecklistSubItem[];
   requiresAction: boolean;
+}
+
+/**
+ * Represents an individual item inside a grouped checklist entry. Each
+ * sub-item tracks its own condition and age.
+ */
+export interface ChecklistSubItem {
+  id: string;
+  name: string;
+  condition: 'excellent' | 'good' | 'fair' | 'poor' | null;
+  estimatedAge?: number;
 }
 
 export interface Inspection {

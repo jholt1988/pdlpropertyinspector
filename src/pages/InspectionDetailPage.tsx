@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, CheckCircle, Camera, Users } from 'lucide-react';
 import { useStorage } from '../contexts/StorageContext';
-import { Inspection, ChecklistItem } from '../types';
+import { Inspection, ChecklistItem, ChecklistSubItem } from '../types';
 
 export function InspectionDetailPage() {
   const { id } = useParams();
@@ -36,6 +36,24 @@ export function InspectionDetailPage() {
       ...updates,
     };
 
+    setInspection(updatedInspection);
+    saveInspection(updatedInspection);
+  };
+
+  // Update a specific sub-item inside a grouped checklist entry
+  const updateChecklistSubItem = (
+    roomIndex: number,
+    itemIndex: number,
+    subIndex: number,
+    updates: Partial<ChecklistSubItem>
+  ) => {
+    if (!inspection) return;
+
+    const updatedInspection = { ...inspection };
+    const item = updatedInspection.rooms[roomIndex].checklistItems[itemIndex];
+    if (!item.subItems) return;
+
+    item.subItems[subIndex] = { ...item.subItems[subIndex], ...updates };
     setInspection(updatedInspection);
     saveInspection(updatedInspection);
   };
@@ -313,41 +331,79 @@ export function InspectionDetailPage() {
                 />
               </div>
 
-              {/* Damage Assessment */}
-              {(currentItem.condition === 'poor' || currentItem.condition === 'fair') && (
-                <div className="mb-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-3">Damage Assessment</h3>
-                  <div className="space-y-3">
-                    <label className="flex items-center gap-3">
-                      <input
-                        type="checkbox"
-                        checked={currentItem.requiresAction}
-                        onChange={(e) =>
-                          updateChecklistItem(activeRoomIndex, activeItemIndex, {
-                            requiresAction: e.target.checked,
-                          })
-                        }
-                        className="w-4 h-4 text-blue-600 rounded"
-                      />
-                      <span className="text-sm font-medium text-gray-700">Requires Action</span>
-                    </label>
+              {/* Allow the inspector to flag items that need follow-up work */}
+              <label className="flex items-center gap-3 mb-6">
+                <input
+                  type="checkbox"
+                  checked={currentItem.requiresAction}
+                  onChange={(e) =>
+                    updateChecklistItem(activeRoomIndex, activeItemIndex, { requiresAction: e.target.checked })
+                  }
+                  className="w-4 h-4 text-blue-600 rounded"
+                />
+                <span className="text-sm font-medium text-gray-700">Requires Action</span>
+              </label>
 
-                    <div className="form-group">
-                      <label className="form-label">Estimated Cost ($)</label>
-                      <input
-                        type="number"
-                        className="form-input"
-                        value={currentItem.damageEstimate || ''}
-                        onChange={(e) => {
-                          const estimate = parseFloat(e.target.value) || 0;
-                          updateChecklistItem(activeRoomIndex, activeItemIndex, {
-                            damageEstimate: estimate,
-                          });
-                        }}
-                        placeholder="0.00"
-                      />
+              {/* Estimated Age */}
+              <div className="mb-6">
+                <label className="form-label">Estimated Age (years)</label>
+                <input
+                  type="number"
+                  className="form-input"
+                  value={currentItem.estimatedAge ?? ''}
+                  onChange={(e) => {
+                    const age = parseFloat(e.target.value) || 0;
+                    updateChecklistItem(activeRoomIndex, activeItemIndex, { estimatedAge: age });
+                  }}
+                  placeholder="0"
+                />
+              </div>
+
+              {/* Sub-items menu for grouped checklist entries */}
+              {currentItem.subItems && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-3">Items</h3>
+                  {currentItem.subItems.map((sub, subIndex) => (
+                    <div key={sub.id} className="mb-4 pl-4 border-l">
+                      <p className="mb-2 font-medium">{sub.name}</p>
+                      <div className="mb-2">
+                        <label className="form-label">Condition</label>
+                        <div className="flex gap-2">
+                          {CONDITIONS.map((condition) => (
+                            <button
+                              key={condition.key}
+                              onClick={() =>
+                                updateChecklistSubItem(activeRoomIndex, activeItemIndex, subIndex, {
+                                  condition: condition.key,
+                                })
+                              }
+                              className={`px-3 py-1 rounded-lg border ${
+                                sub.condition === condition.key
+                                  ? 'bg-blue-50 border-blue-500 text-blue-700'
+                                  : 'bg-white border-gray-200 text-gray-700'
+                              }`}
+                            >
+                              {condition.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Estimated Age (years)</label>
+                        <input
+                          type="number"
+                          className="form-input"
+                          value={sub.estimatedAge ?? ''}
+                          onChange={(e) =>
+                            updateChecklistSubItem(activeRoomIndex, activeItemIndex, subIndex, {
+                              estimatedAge: parseFloat(e.target.value) || 0,
+                            })
+                          }
+                          placeholder="0"
+                        />
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
               )}
             </div>

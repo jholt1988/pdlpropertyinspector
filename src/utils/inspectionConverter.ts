@@ -17,23 +17,34 @@ function mapCondition(condition: ChecklistItem['condition']): InventoryItem['cur
 
 export function inspectionToInventoryItems(inspection: Inspection): InventoryItem[] {
   const items: InventoryItem[] = [];
+  const now = new Date();
 
   inspection.rooms.forEach(room => {
     room.checklistItems.forEach(check => {
-      const needsAction = check.requiresAction || (check.condition === 'poor') || (check.damageEstimate && check.damageEstimate > 0);
-      if (!needsAction) return;
-
-      const item: InventoryItem = {
-        itemId: `${inspection.id}_${room.id}_${check.id}`,
-        itemName: check.item,
-        category: check.category.toLowerCase(),
-        currentCondition: mapCondition(check.condition),
-        purchaseDate: new Date().toISOString(),
-        originalCost: check.damageEstimate || 0,
-        location: room.name,
-        description: check.notes
+      // Helper to push a converted inventory item
+      const pushItem = (name: string, condition: ChecklistItem['condition'], age?: number) => {
+        const purchaseDate = age
+          ? new Date(now.getFullYear() - age, now.getMonth(), now.getDate()).toISOString()
+          : now.toISOString();
+        items.push({
+          itemId: `${inspection.id}_${room.id}_${check.id}_${name.replace(/\s+/g, '')}`,
+          itemName: name,
+          category: check.category.toLowerCase(),
+          currentCondition: mapCondition(condition),
+          purchaseDate,
+          // Cost is no longer collected during inspection so default to 0
+          originalCost: 0,
+          location: room.name,
+          description: check.notes
+        });
       };
-      items.push(item);
+
+      // If the checklist entry contains sub-items, convert each one individually
+      if (check.subItems && check.subItems.length > 0) {
+        check.subItems.forEach(sub => pushItem(sub.name, sub.condition, sub.estimatedAge));
+      } else {
+        pushItem(check.item, check.condition, check.estimatedAge);
+      }
     });
   });
 

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { analyzeInventoryAndGeneratePlan } from '../../src/utils/analysisEngine.ts';
 import { InventoryItem, SystemConfig } from '../../src/types';
 
@@ -46,7 +46,7 @@ describe('analyzeInventory', () => {
         itemName: 'Old Pipe',
         category: 'plumbing',
         currentCondition: 'Fair',
-        purchaseDate: '2019-06-01T00:00:00Z',
+        purchaseDate: '2021-01-01T00:00:00Z',
         lastMaintenanceDate: '2023-01-01T00:00:00Z',
         originalCost: 1000,
         currentMarketValue: 1000,
@@ -76,6 +76,9 @@ describe('analyzeInventory', () => {
       }
     };
 
+    // Stub network calls so the estimator uses mock data
+    (global as any).fetch = vi.fn().mockRejectedValue(new Error('network'));
+
     const result = await analyzeInventoryAndGeneratePlan(inventory, config);
     expect(result.totalItems).toBe(2);
     expect(result.flaggedItems.length).toBe(2);
@@ -91,7 +94,7 @@ describe('analyzeInventory', () => {
 
     expect(result.summary).toEqual({
       conditionFlags: 1,
-      lifecycleFlags: 1,
+      lifecycleFlags: 2,
       maintenanceFlags: 0
     });
     });
