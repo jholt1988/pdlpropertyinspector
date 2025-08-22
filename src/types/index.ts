@@ -249,3 +249,66 @@ export interface DetailedEstimate {
   };
 }
 
+export interface EnhancedEstimateLineItem {
+  itemId: string;
+  itemName: string;
+  category: string;
+  currentCondition: string;
+  location?: string;
+  originalCost: number;
+  currentAge: number;
+  depreciatedValue: number;
+  adjustedValue: number;
+  conditionPenalty: number;
+  expectedLifetime: number;
+  annualDepreciationRate: number;
+  laborRate: number;
+  fix?: {
+    laborHours: number;
+    laborRate: number;
+    partsCost: number;
+    totalCost: number;
+  };
+  replace?: {
+    laborHours: number;
+    laborRate: number;
+    partsCost: number;
+    totalCost: number;
+  };
+  recommendedAction: 'Fix' | 'Replace';
+  reclassificationReason?: string;
+  instructions?: {
+    fix?: string[];
+    replace?: string[];
+  };
+}
+
+export interface EnhancedDetailedEstimate {
+  line_items: EnhancedEstimateLineItem[];
+  summary: {
+    totalOriginalCost: number;
+    totalDepreciatedValue: number;
+    totalAdjustedValue: number;
+    totalFixCost: number;
+    totalReplaceCost: number;
+    totalRecommendedCost: number;
+    overallRecommendation: string;
+    total_labor_cost: number;
+    total_material_cost: number;
+    total_project_cost: number;
+    items_to_repair: number;
+    items_to_replace: number;
+    reclassifiedItems: number;
+  };
+  metadata: {
+    estimateDate: string;
+    currency: string;
+    location: string;
+    depreciationMethod: string;
+    analysisSteps: string[];
+    user_location: UserLocation;
+    generated_date: string;
+    disclaimer: string;
+  };
+}
+
