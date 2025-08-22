@@ -110,7 +110,7 @@ export const analyzeInventoryAndGeneratePlan = async (
     if (!match) return;
     const { item: originalItem, flagReason, flagDetails, actionOverride } = match;
 
-    const recommendation = (actionOverride || lineItem.recommendedAction.toLowerCase()) as 'fix' | 'replace';
+    const recommendation = (actionOverride || (typeof lineItem.recommendedAction === 'string' ? lineItem.recommendedAction.toLowerCase() : undefined)) as 'fix' | 'replace';
     const flaggedItem: FlaggedItem = {
       ...originalItem,
       flagReason,
