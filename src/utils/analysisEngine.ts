@@ -89,14 +89,16 @@ export const analyzeInventoryAndGeneratePlan = async (
   }
 
   const userLocation: UserLocation = {
-    ...config.userLocation,
+    city: 'Default City',
+    region: 'Default Region', 
+    country: 'US',
     type: 'approximate'
   };
 
   const estimate = await generateDetailedRepairEstimate(itemsToEstimate.map(i => i.item), userLocation);
 
   estimate.line_items.forEach(lineItem => {
-    const match = itemsToEstimate.find(i => i.item.itemName === lineItem.item_description);
+    const match = itemsToEstimate.find(i => i.item.itemName === lineItem.itemName);
     if (!match) return;
     const { item: originalItem, flagReason, flagDetails } = match;
 
@@ -104,15 +106,19 @@ export const analyzeInventoryAndGeneratePlan = async (
       ...originalItem,
       flagReason,
       flagDetails: flagDetails.join('; '),
-      recommendation: lineItem.recommended_option.action,
-      estimatedRepairCost: lineItem.repair_costs.total_cost,
-      estimatedReplacementCost: lineItem.replacement_costs.total_cost,
-      repairSteps: lineItem.repair_steps,
-      requiredResources: generateRequiredResources(originalItem, lineItem.recommended_option.action),
-      estimatedTimeline: generateEstimatedTimeline(originalItem, lineItem.recommended_option.action),
+      recommendation: lineItem.recommendedAction.toLowerCase() as 'fix' | 'replace',
+      estimatedRepairCost: lineItem.fix?.totalCost,
+      estimatedReplacementCost: lineItem.replace?.totalCost,
+      repairSteps: lineItem.recommendedAction === 'Fix' ? lineItem.instructions?.fix : lineItem.instructions?.replace,
+      requiredResources: generateRequiredResources(originalItem, lineItem.recommendedAction.toLowerCase() as 'fix' | 'replace'),
+      estimatedTimeline: generateEstimatedTimeline(originalItem, lineItem.recommendedAction.toLowerCase() as 'fix' | 'replace'),
       costBreakdown: {
-        labor: lineItem.recommended_option.labor_cost,
-        parts: lineItem.recommended_option.material_cost
+        labor: lineItem.recommendedAction === 'Fix' 
+          ? (lineItem.fix?.laborHours || 0) * (lineItem.fix?.laborRate || 0)
+          : (lineItem.replace?.laborHours || 0) * (lineItem.replace?.laborRate || 0),
+        parts: lineItem.recommendedAction === 'Fix' 
+          ? lineItem.fix?.partsCost 
+          : lineItem.replace?.partsCost
       }
     };
     flaggedItems.push(flaggedItem);

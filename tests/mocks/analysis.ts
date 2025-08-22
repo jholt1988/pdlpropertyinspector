@@ -1,15 +1,14 @@
 import { AnalysisResult, FlaggedItem, InventoryItem } from '../../src/types';
 
 const mockInventoryItem: InventoryItem = {
-  id: 'ITEM-1',
-  name: 'HVAC Unit',
+  itemId: 'ITEM-1',
+  itemName: 'HVAC Unit',
   category: 'hvac',
   location: 'Roof',
   purchaseDate: '2015-01-10T00:00:00.000Z',
   originalCost: 5000,
   currentCondition: 'Fair',
   lastMaintenanceDate: '2024-01-15T00:00:00.000Z',
-  maintenanceFrequency: 12,
 };
 
 const mockFlaggedItem: FlaggedItem = {
