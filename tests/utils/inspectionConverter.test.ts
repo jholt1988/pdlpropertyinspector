@@ -41,8 +41,20 @@ describe('inspectionToInventoryItems', () => {
           name: 'Kitchen',
           type: 'kitchen',
           checklistItems: [
-            { id: 'c1', category: 'Electrical', item: 'Outlet', condition: 'poor', notes: 'broken', photos: [], requiresAction: true },
-            { id: 'c2', category: 'Plumbing', item: 'Sink', condition: 'good', notes: '', photos: [], damageEstimate: 50, requiresAction: false }
+            { id: 'c1', category: 'Electrical', item: 'Outlet', condition: 'poor', notes: 'broken', photos: [], requiresAction: true, estimatedAge: 10 },
+            {
+              id: 'c2',
+              category: 'Appliances',
+              item: 'Kitchen appliances',
+              condition: null,
+              notes: '',
+              photos: [],
+              requiresAction: false,
+              subItems: [
+                { id: 'c2a', name: 'Refrigerator', condition: 'good', estimatedAge: 3 },
+                { id: 'c2b', name: 'Stove', condition: 'fair', estimatedAge: 6 }
+              ]
+            }
           ]
         }
       ],
@@ -53,13 +65,14 @@ describe('inspectionToInventoryItems', () => {
     } as unknown as Inspection;
 
     const items = inspectionToInventoryItems(inspection);
-    expect(items.length).toBe(2);
+    expect(items.length).toBe(3);
     expect(items[0].itemName).toBe('Outlet');
     expect(items[0].category).toBe('electrical');
     expect(items[0].currentCondition).toBe('Poor');
-    expect(items[1].itemName).toBe('Sink');
-    expect(items[1].category).toBe('plumbing');
-    expect(items[1].currentCondition).toBe('Good');
+    expect(items[1].itemName).toBe('Refrigerator');
+    expect(items[1].category).toBe('appliances');
+    expect(items[2].itemName).toBe('Stove');
+    expect(items[2].currentCondition).toBe('Fair');
     });
   });
 });

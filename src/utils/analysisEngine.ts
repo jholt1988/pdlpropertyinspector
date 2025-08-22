@@ -18,7 +18,7 @@ export const analyzeInventoryAndGeneratePlan = async (
   let lifecycleFlags = 0;
   let maintenanceFlags = 0;
 
-  const itemsToEstimate: { item: InventoryItem; flagReason: 'condition' | 'lifecycle' | 'maintenance'; flagDetails: string[] }[] = [];
+  const itemsToEstimate: { item: InventoryItem; flagReason: 'condition' | 'lifecycle' | 'maintenance'; flagDetails: string[]; actionOverride?: 'fix' | 'replace' }[] = [];
 
   inventory.forEach(item => {
     const flagReasons: string[] = [];
@@ -32,21 +32,29 @@ export const analyzeInventoryAndGeneratePlan = async (
       conditionFlags++;
     }
 
-    // Check lifecycle-based flags
+    // Check lifecycle-based flags using age vs expected lifespan
     const purchaseDate = new Date(item.purchaseDate);
     const monthsSincePurchase = Math.floor(
       (currentDate.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24 * 30)
     );
     const expectedLifespan = config.expectedLifespans[item.category] || config.expectedLifespans.general;
+    const ageRatio = monthsSincePurchase / expectedLifespan;
+    let actionOverride: 'fix' | 'replace' | undefined;
 
-    if (monthsSincePurchase >= expectedLifespan * 0.8) {
-      flagReasons.push(
-        `lifecycle: approaching/exceeding expected lifespan (${monthsSincePurchase}/${expectedLifespan} months)`
-      );
+    if (ageRatio >= 0.8) {
+      flagReasons.push(`lifecycle: ${monthsSincePurchase}/${expectedLifespan} months`);
+      actionOverride = 'replace';
       if (flagReason !== 'condition') {
         flagReason = 'lifecycle';
-        lifecycleFlags++;
       }
+      lifecycleFlags++;
+    } else if (ageRatio >= 0.5) {
+      flagReasons.push(`lifecycle: ${monthsSincePurchase}/${expectedLifespan} months`);
+      actionOverride = 'fix';
+      if (flagReason !== 'condition') {
+        flagReason = 'lifecycle';
+      }
+      lifecycleFlags++;
     }
 
     // Check maintenance-based flags
@@ -68,7 +76,7 @@ export const analyzeInventoryAndGeneratePlan = async (
     }
 
     if (flagReasons.length > 0 && flagReason) {
-      itemsToEstimate.push({ item, flagReason, flagDetails: flagReasons });
+      itemsToEstimate.push({ item, flagReason, flagDetails: flagReasons, actionOverride });
     }
   });
 
@@ -100,24 +108,25 @@ export const analyzeInventoryAndGeneratePlan = async (
   estimate.line_items.forEach(lineItem => {
     const match = itemsToEstimate.find(i => i.item.itemName === lineItem.itemName);
     if (!match) return;
-    const { item: originalItem, flagReason, flagDetails } = match;
+    const { item: originalItem, flagReason, flagDetails, actionOverride } = match;
 
+    const recommendation = (actionOverride || (typeof lineItem.recommendedAction === 'string' ? lineItem.recommendedAction.toLowerCase() : undefined)) as 'fix' | 'replace';
     const flaggedItem: FlaggedItem = {
       ...originalItem,
       flagReason,
       flagDetails: flagDetails.join('; '),
-      recommendation: lineItem.recommendedAction.toLowerCase() as 'fix' | 'replace',
-      estimatedRepairCost: lineItem.fix?.totalCost,
-      estimatedReplacementCost: lineItem.replace?.totalCost,
-      repairSteps: lineItem.recommendedAction === 'Fix' ? lineItem.instructions?.fix : lineItem.instructions?.replace,
-      requiredResources: generateRequiredResources(originalItem, lineItem.recommendedAction.toLowerCase() as 'fix' | 'replace'),
-      estimatedTimeline: generateEstimatedTimeline(originalItem, lineItem.recommendedAction.toLowerCase() as 'fix' | 'replace'),
+      recommendation,
+      estimatedRepairCost: recommendation === 'fix' ? lineItem.fix?.totalCost : undefined,
+      estimatedReplacementCost: recommendation === 'replace' ? lineItem.replace?.totalCost : undefined,
+      repairSteps: recommendation === 'fix' ? lineItem.instructions?.fix : lineItem.instructions?.replace,
+      requiredResources: generateRequiredResources(originalItem, recommendation),
+      estimatedTimeline: generateEstimatedTimeline(originalItem, recommendation),
       costBreakdown: {
-        labor: lineItem.recommendedAction === 'Fix' 
+        labor: recommendation === 'fix'
           ? (lineItem.fix?.laborHours || 0) * (lineItem.fix?.laborRate || 0)
           : (lineItem.replace?.laborHours || 0) * (lineItem.replace?.laborRate || 0),
-        parts: lineItem.recommendedAction === 'Fix' 
-          ? lineItem.fix?.partsCost 
+        parts: recommendation === 'fix'
+          ? lineItem.fix?.partsCost
           : lineItem.replace?.partsCost
       }
     };
@@ -126,13 +135,18 @@ export const analyzeInventoryAndGeneratePlan = async (
 
   const itemsToFix = flaggedItems.filter(item => item.recommendation === 'fix');
   const itemsToReplace = flaggedItems.filter(item => item.recommendation === 'replace');
+  const totalEstimatedCost = estimate.summary?.total_project_cost ?? flaggedItems.reduce((sum, item) =>
+    sum + (item.recommendation === 'fix'
+      ? (item.estimatedRepairCost || 0)
+      ? (Number.isFinite(item.estimatedRepairCost) ? item.estimatedRepairCost as number : 0)
+      : (Number.isFinite(item.estimatedReplacementCost) ? item.estimatedReplacementCost as number : 0)), 0);
 
   return {
     totalItems: inventory.length,
     flaggedItems,
     itemsToFix,
     itemsToReplace,
-    totalEstimatedCost: estimate.summary.total_project_cost,
+    totalEstimatedCost,
     generatedDate: new Date().toISOString(),
     summary: {
       conditionFlags,
