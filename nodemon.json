@@ -1,0 +1,12 @@
+{
+  "watch": [
+    "server",
+    "src"
+  ],
+  "ext": "ts,js,json",
+  "delay": "250",
+  "exec": "npm run build:server && node ./dist/server/index.js",
+  "env": {
+    "NODE_ENV": "development"
+  }
+}

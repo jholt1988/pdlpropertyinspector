@@ -8,8 +8,9 @@ import {
 import { hashPassword, verifyPassword } from '../utils/security/passwordUtils';
 import { validateRegistrationData, validateLoginCredentials } from '../utils/security/inputValidation';
 import { loginRateLimiter, registrationRateLimiter, passwordResetRateLimiter } from '../utils/security/rateLimiter';
-import { getSecureRandomInt } from '../utils/security/passwordUtils';
+// ...existing imports
 import { User } from '../types/user';
+import { apiClient } from './apiClient';
 
 export interface StoredUser extends User {
   passwordHash?: string;
@@ -118,20 +119,12 @@ export class AuthService {
       this.users.set(newUser.id, newUser);
       this.saveUsers();
 
-      // Remove sensitive data from response
-      const {
-        passwordHash: _,
-        emailVerificationToken: __,
-        passwordResetToken: ___,
-        passwordResetExpires: ____,
-        isActive: _____,
-        failedLoginAttempts: ______,
-        ...userResponse
-      } = newUser;
+      // Remove sensitive data from response (alias sensitive fields to avoid redeclaration)
+      const { passwordHash: _ph, emailVerificationToken: _evt, passwordResetToken: _prt, passwordResetExpires: _pre, ...rest } = newUser as any;
 
       return {
         success: true,
-        user: userResponse as User,
+        user: rest as User,
         needsEmailVerification: true,
       };
     } catch (error) {
@@ -255,15 +248,15 @@ export class AuthService {
       });
 
       // Remove sensitive data from response
-      const {
-        passwordHash,
-        emailVerificationToken,
-        passwordResetToken,
-        passwordResetExpires,
-        isActive,
-        failedLoginAttempts,
-        ...userResponse
-      } = user;
+      const { passwordHash: _ph, emailVerificationToken: _evt, passwordResetToken: _prt, passwordResetExpires: _pre, ...userResponse } = user as any;
+
+      // Persist tokens to storage via ApiClient helpers
+      try {
+        apiClient.setAccessToken(accessToken);
+        apiClient.setRefreshToken(refreshToken);
+      } catch (e) {
+        console.warn('Failed to persist tokens to storage', e);
+      }
 
       return {
         success: true,
@@ -310,6 +303,13 @@ export class AuthService {
         sessionId: payload.sessionId,
       });
 
+      // Persist new access token
+      try {
+        apiClient.setAccessToken(accessToken);
+      } catch (e) {
+        console.warn('Failed to persist access token on refresh', e);
+      }
+
       return { accessToken };
     } catch (error) {
       return { error: 'Invalid refresh token.' };
@@ -321,6 +321,11 @@ export class AuthService {
    */
   async logout(sessionId: string): Promise<void> {
     this.sessions.delete(sessionId);
+    try {
+      apiClient.clearTokens();
+    } catch (e) {
+      console.warn('Failed to clear tokens on logout', e);
+    }
   }
 
   /**
@@ -409,15 +414,15 @@ export class AuthService {
 
       // Return user without sensitive data
       const {
-        passwordHash,
-        emailVerificationToken,
-        passwordResetToken,
-        passwordResetExpires,
-        isActive,
-        failedLoginAttempts,
+        passwordHash: _ph,
+        emailVerificationToken: _evt,
+        passwordResetToken: _prt,
+        passwordResetExpires: _pre,
+        isActive: _isActive,
+        failedLoginAttempts: _failed,
         ...userResponse
-      } = updatedUser;
-      return { success: true, user: userResponse as User };
+      } = updatedUser as any;
+      return { success: true, user: userResponse as Omit<StoredUser, 'passwordHash' | 'emailVerificationToken' | 'passwordResetToken' | 'passwordResetExpires'> };
     } catch (error) {
       console.error('Profile update error:', error);
       return { success: false, error: 'Failed to update profile' };
@@ -429,7 +434,10 @@ export class AuthService {
     return Array.from(this.users.values()).find(user => user.email === email.toLowerCase());
   }
   private generateSecureToken(length = 32): string {
-    return randomBytes(length).toString('hex');
+    // Use Web Crypto API for browser compatibility
+    const array = new Uint8Array(length);
+    crypto.getRandomValues(array);
+    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
   }
 
   private invalidateUserSessions(userId: string): void {
@@ -442,7 +450,7 @@ export class AuthService {
 
   private loadUsers(): void {
     try {
-      const stored = localStorage.getItem('secure_users');
+      const stored = apiClient.storage.getItem('secure_users');
       if (stored) {
         const usersArray = JSON.parse(stored);
         usersArray.forEach((user: StoredUser) => {
@@ -456,8 +464,8 @@ export class AuthService {
 
   private saveUsers(): void {
     try {
-      const usersArray = Array.from(this.users.values());
-      localStorage.setItem('secure_users', JSON.stringify(usersArray));
+  const usersArray = Array.from(this.users.values());
+  apiClient.storage.setItem('secure_users', JSON.stringify(usersArray));
     } catch (error) {
       console.error('Error saving users:', error);
     }

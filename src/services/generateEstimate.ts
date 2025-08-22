@@ -1,140 +1,135 @@
 // services/generateEstimate.ts
-import OpenAI from 'openai';
-import { setDefaultOpenAIClient, run } from '@openai/agents';
-import { createRepairEstimatorAgent } from '../agent/repairEstimateAgent';
 import { InventoryItem, DetailedEstimate, EstimateLineItem, EstimateResult, UserLocation } from '../types';
 
-// Set OpenAI client
-const apiKey = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.VITE_OPENAI_API_KEY : undefined;
-const openai = new OpenAI({ apiKey });
+async function callBackendEstimateAPI(
+  inventoryItems: InventoryItem[],
+  userLocation: UserLocation,
+  currency = 'USD'
+): Promise<DetailedEstimate | null> {
+  try {
+    console.log('🔄 Calling backend estimate API...', { 
+      inventoryCount: inventoryItems.length, 
+      userLocation,
+      currency 
+    });
 
+    const resp = await fetch('/api/estimate', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-API-KEY': 'dev_api_key_example' // Use the dev API key from apiKeys.json
+      },
+      body: JSON.stringify({ inventoryItems, userLocation, currency }),
+    });
+
+    console.log('📡 Backend response status:', resp.status);
+
+    if (!resp.ok) {
+      const errorText = await resp.text();
+      console.warn('❌ Backend estimate API returned non-OK', resp.status, errorText);
+      return null;
+    }
+
+    const json = await resp.json();
+    console.log('✅ Backend estimate API success:', json);
+    return json as DetailedEstimate;
+  } catch (err) {
+    console.warn('❌ Failed to call backend estimate API', err);
+    return null;
+  }
+}
 
 export async function generateDetailedRepairEstimate(
   inventoryItems: InventoryItem[],
   userLocation: UserLocation,
   currency = 'USD'
 ): Promise<DetailedEstimate> {
-  if (!openai) {
-    // Return mock data that matches the expected structure
-    const mockLineItems: EstimateLineItem[] = inventoryItems
-      .filter(item => item.currentCondition === 'Poor' || item.currentCondition === 'Damaged' || item.currentCondition === 'Non-functional')
-      .map(item => ({
-        itemId: item.itemId,
-        itemName: item.itemName,
-        category: item.category,
-        currentCondition: item.currentCondition,
-        location: item.location || 'General',
-        fix: {
-          laborHours: item.currentCondition === 'Non-functional' ? 4 : 1.5,
-          laborRate: item.category === 'plumbing' ? 100 : item.category === 'hvac' ? 90 : 75,
-          partsCost: item.currentCondition === 'Non-functional' ? 1000 : 50,
-          totalCost: item.currentCondition === 'Non-functional' ? 1360 : 162.5
-        },
-        replace: {
-          laborHours: item.currentCondition === 'Non-functional' ? 4 : 2,
-          laborRate: item.category === 'plumbing' ? 100 : item.category === 'hvac' ? 90 : 75,
-          partsCost: item.originalCost * 0.8, // 80% of original cost for replacement
-          totalCost: item.originalCost * 1.2 // 120% of original cost including labor
-        },
-        recommendedAction: item.currentCondition === 'Non-functional' ? 'Replace' : 'Fix',
-        instructions: {
-          fix: [
-            `Assess ${item.itemName} condition`,
-            `Repair ${item.itemName} components`,
-            'Test functionality',
-            'Clean up work area'
-          ],
-          replace: [
-            `Remove old ${item.itemName}`,
-            `Install new ${item.itemName}`,
-            'Test installation',
-            'Clean up work area'
-          ]
-        }
-      }));
+  console.log('🏁 Starting generateDetailedRepairEstimate', { 
+    itemCount: inventoryItems.length, 
+    location: userLocation,
+    currency 
+  });
 
-    const totalFixCost = mockLineItems.reduce((sum, item) => sum + (item.fix?.totalCost || 0), 0);
-    const totalReplaceCost = mockLineItems.reduce((sum, item) => sum + (item.replace?.totalCost || 0), 0);
-    const totalRecommendedCost = mockLineItems.reduce((sum, item) => 
-      sum + (item.recommendedAction === 'Fix' ? (item.fix?.totalCost || 0) : (item.replace?.totalCost || 0)), 0);
-    
-    return {
-      line_items: mockLineItems,
-      summary: {
-        totalFixCost,
-        totalReplaceCost,
-        totalRecommendedCost,
-        overallRecommendation: 'Fix items where cost-effective to extend service life',
-        total_labor_cost: mockLineItems.reduce((sum, item) => 
-          sum + (item.recommendedAction === 'Fix' 
-            ? (item.fix?.laborHours || 0) * (item.fix?.laborRate || 0)
-            : (item.replace?.laborHours || 0) * (item.replace?.laborRate || 0)), 0),
-        total_material_cost: mockLineItems.reduce((sum, item) => 
-          sum + (item.recommendedAction === 'Fix' 
-            ? (item.fix?.partsCost || 0)
-            : (item.replace?.partsCost || 0)), 0),
-        total_project_cost: totalRecommendedCost,
-        items_to_repair: mockLineItems.filter(item => item.recommendedAction === 'Fix').length,
-        items_to_replace: mockLineItems.filter(item => item.recommendedAction === 'Replace').length
-      },
-      metadata: {
-        user_location: userLocation,
-        currency,
-        generated_date: new Date().toISOString(),
-        creationDate: new Date().toISOString().split('T')[0],
-        location: `${userLocation.city}, ${userLocation.region}`,
-        disclaimer: 'OpenAI API key not configured; using mock estimate based on item conditions.'
-      }
-    };
+  // Try backend first (preferred). Backend should own OpenAI key and agent usage.
+  const backendResult = await callBackendEstimateAPI(inventoryItems, userLocation, currency);
+  if (backendResult) {
+    console.log('✅ Using backend result');
+    return backendResult;
   }
 
-  const agent = createRepairEstimatorAgent(userLocation);
+  console.log('⚠️ Backend failed, using fallback mock data');
 
-  const prompt = `Analyze the following items and generate a detailed estimate for ${userLocation.city}, ${userLocation.region}:
-
-${JSON.stringify(
-    inventoryItems,
-    null,
-    2
-  )}
-
-Currency: ${currency}`;
-
-  try {
-    const response =  (await run(agent, prompt).then(res => res.finalOutput )) as string;
-    console.log('Detailed Repair Estimator Response:', response);
-    const parsed : DetailedEstimate = JSON.parse(response);
-    console.log('Parsed Estimate:', parsed);
-    
-    // Transform the response to match our DetailedEstimate interface
-    const transformedResponse: DetailedEstimate = {
-      line_items: parsed?.line_items || [],
-      summary: {
-        totalFixCost: parsed.summary?.totalFixCost || 0,
-        totalReplaceCost: parsed.summary?.totalReplaceCost || 0,
-        totalRecommendedCost: parsed.summary?.totalRecommendedCost || 0,
-        overallRecommendation: parsed.summary?.overallRecommendation || 'Review recommendations',
-        total_labor_cost: parsed.summary?.total_labor_cost || 0,
-        total_material_cost: parsed.summary?.total_material_cost || 0,
-        total_project_cost: parsed.summary?.total_project_cost || parsed.summary?.totalRecommendedCost || 0,
-        items_to_repair: parsed.summary?.items_to_repair || 0,
-        items_to_replace: parsed.summary?.items_to_replace || 0
+  // Fallback: return deterministic mock data (keeps frontend working without backend)
+  const mockLineItems: EstimateLineItem[] = inventoryItems
+    .filter(item => item.currentCondition === 'Poor' || item.currentCondition === 'Damaged' || item.currentCondition === 'Non-functional')
+    .map(item => ({
+      itemId: item.itemId,
+      itemName: item.itemName,
+      category: item.category,
+      currentCondition: item.currentCondition,
+      location: item.location || 'General',
+      fix: {
+        laborHours: item.currentCondition === 'Non-functional' ? 4 : 1.5,
+        laborRate: item.category === 'plumbing' ? 100 : item.category === 'hvac' ? 90 : 75,
+        partsCost: item.currentCondition === 'Non-functional' ? 1000 : 50,
+        totalCost: item.currentCondition === 'Non-functional' ? 1360 : 162.5
       },
-      metadata: {
-        user_location: userLocation,
-        currency,
-        generated_date: new Date().toISOString(),
-        creationDate: parsed.metadata?.creationDate || new Date().toISOString().split('T')[0],
-        location: parsed.metadata?.location || `${userLocation.city}, ${userLocation.region}`,
-        disclaimer: 'Estimates are based on market data and may vary. Always confirm with local contractors.'
+      replace: {
+        laborHours: item.currentCondition === 'Non-functional' ? 4 : 2,
+        laborRate: item.category === 'plumbing' ? 100 : item.category === 'hvac' ? 90 : 75,
+        partsCost: item.originalCost * 0.8,
+        totalCost: item.originalCost * 1.2
+      },
+      recommendedAction: item.currentCondition === 'Non-functional' ? 'Replace' : 'Fix',
+      instructions: {
+        fix: [
+          `Assess ${item.itemName} condition`,
+          `Repair ${item.itemName} components`,
+          'Test functionality',
+          'Clean up work area'
+        ],
+        replace: [
+          `Remove old ${item.itemName}`,
+          `Install new ${item.itemName}`,
+          'Test installation',
+          'Clean up work area'
+        ]
       }
-    };
-    
-    return transformedResponse;
-  } catch (err) {
-    console.error('Estimation error:', err);
-    throw new Error(`Estimation failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
-  }
+    }));
+
+  const totalFixCost = mockLineItems.reduce((sum, item) => sum + (item.fix?.totalCost || 0), 0);
+  const totalReplaceCost = mockLineItems.reduce((sum, item) => sum + (item.replace?.totalCost || 0), 0);
+  const totalRecommendedCost = mockLineItems.reduce((sum, item) =>
+    sum + (item.recommendedAction === 'Fix' ? (item.fix?.totalCost || 0) : (item.replace?.totalCost || 0)), 0);
+
+  return {
+    line_items: mockLineItems,
+    summary: {
+      totalFixCost,
+      totalReplaceCost,
+      totalRecommendedCost,
+      overallRecommendation: 'Fix items where cost-effective to extend service life',
+      total_labor_cost: mockLineItems.reduce((sum, item) =>
+        sum + (item.recommendedAction === 'Fix'
+          ? (item.fix?.laborHours || 0) * (item.fix?.laborRate || 0)
+          : (item.replace?.laborHours || 0) * (item.replace?.laborRate || 0)), 0),
+      total_material_cost: mockLineItems.reduce((sum, item) =>
+        sum + (item.recommendedAction === 'Fix'
+          ? (item.fix?.partsCost || 0)
+          : (item.replace?.partsCost || 0)), 0),
+      total_project_cost: totalRecommendedCost,
+      items_to_repair: mockLineItems.filter(item => item.recommendedAction === 'Fix').length,
+      items_to_replace: mockLineItems.filter(item => item.recommendedAction === 'Replace').length
+    },
+    metadata: {
+      user_location: userLocation,
+      currency,
+      generated_date: new Date().toISOString(),
+      creationDate: new Date().toISOString().split('T')[0],
+      location: `${userLocation.city}, ${userLocation.region}`,
+      disclaimer: 'OpenAI API key not configured; using mock estimate based on item conditions.'
+    }
+  };
 }
 
 export async function runRepairEstimatorAgent(

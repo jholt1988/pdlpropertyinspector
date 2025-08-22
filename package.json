@@ -5,6 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "build:server": "node ./scripts/cleanDist.cjs && npx tsc -p server/tsconfig.server.json && node ./scripts/writeDistPackageCommonjs.cjs && node ./scripts/fixServerRequires.cjs",
+    "start:server": "npx tsx ./server/index.ts",
+    "start:server:prod": "npm run build:server && node ./dist/server/index.js",
+    "dev:server:watch": "nodemon --config nodemon.json",
+    "dev:server:tsnode": "nodemon --watch server --ext ts --exec \"npx tsx server/index.ts\"",
     "build": "tsc && vite build",
     "build:web": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
@@ -13,6 +18,7 @@
   },
   "dependencies": {
     "@openai/agents": "^0.0.13",
+    "@supabase/supabase-js": "^2.56.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/dompurify": "^3.0.5",
     "@types/react": "^18.2.43",
@@ -21,6 +27,7 @@
     "crypto-browserify": "^3.12.1",
     "dompurify": "^3.2.6",
     "dotenv": "^17.2.1",
+    "ioredis": "^5.3.2",
     "jose": "^5.10.0",
     "key-check-agent": "^1.0.0",
     "lucide-react": "^0.294.0",
@@ -33,18 +40,26 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.4",
     "@testing-library/react": "^16.3.0",
+    "@types/express": "^5.0.3",
     "@types/node": "^24.1.0",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "@vitejs/plugin-react": "^4.2.1",
+    "body-parser": "^1.20.2",
+    "concurrently": "^9.2.0",
     "eslint": "^8.55.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
+    "express": "^4.18.2",
     "happy-dom": "^18.0.1",
     "jsdom": "^26.1.0",
+    "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "tsx": "^4.20.4",
     "typescript": "^5.2.2",
     "vite": "^5.0.8",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "zod": "^3.22.4"
   }
 }

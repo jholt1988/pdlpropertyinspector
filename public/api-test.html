@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Test</h1>
+    <button onclick="testHealth()">Test Health</button>
+    <button onclick="testEstimate()">Test Estimate</button>
+    <div id="results"></div>
+
+    <script>
+        function log(message) {
+            const div = document.getElementById('results');
+            div.innerHTML += '<p>' + message + '</p>';
+            console.log(message);
+        }
+
+        async function testHealth() {
+            log('🔄 Testing health endpoint...');
+            try {
+                const response = await fetch('/api/../health'); // Go through Vite proxy
+                log('📡 Health status: ' + response.status);
+                const result = await response.json();
+                log('✅ Health result: ' + JSON.stringify(result));
+            } catch (error) {
+                log('❌ Health test failed: ' + error.message);
+            }
+        }
+
+        async function testEstimate() {
+            log('🔄 Testing estimate endpoint...');
+            try {
+                const testData = {
+                    inventoryItems: [{
+                        itemId: 'test-1',
+                        itemName: 'Test Water Heater',
+                        category: 'plumbing',
+                        currentCondition: 'Poor',
+                        location: 'Basement',
+                        originalCost: 800
+                    }],
+                    userLocation: {
+                        city: 'Seattle',
+                        region: 'WA'
+                    },
+                    currency: 'USD'
+                };
+
+                const response = await fetch('/api/estimate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-KEY': 'dev_api_key_example'
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                log('📡 Estimate status: ' + response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    log('❌ Estimate error: ' + errorText);
+                    return;
+                }
+
+                const result = await response.json();
+                log('✅ Estimate result: ' + JSON.stringify(result, null, 2));
+            } catch (error) {
+                log('❌ Estimate test failed: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
