@@ -79,9 +79,22 @@ export async function runEstimateAgent(inventoryItems: any[], userLocation: any,
       if (jsonMatch) {
         jsonString = jsonMatch[0];
       }
+      
+      // Common JSON fixes
+      jsonString = jsonString
+        .replace(/,(\s*[}\]])/g, '$1')  // Remove trailing commas
+        .replace(/([{,]\s*)(\w+):/g, '$1"$2":')  // Quote unquoted keys
+        .replace(/:\s*'([^']*)'/g, ':"$1"')  // Convert single quotes to double quotes
+        .replace(/:\s*`([^`]*)`/g, ':"$1"')  // Convert backticks to double quotes
+        .replace(/\n/g, ' ')  // Remove newlines that might break parsing
+        .replace(/\r/g, ' ')  // Remove carriage returns
+        .replace(/\t/g, ' ')  // Replace tabs with spaces
+        .replace(/\s+/g, ' '); // Normalize whitespace
     }
 
-    console.log('Cleaned JSON string:', jsonString);
+    console.log('Cleaned JSON string (first 500 chars):', jsonString.substring(0, 500));
+    console.log('Error location around position 428:', jsonString.substring(400, 450));
+    
     const parsed = JSON.parse(jsonString);
     
     // Validate the parsed result has expected structure
@@ -91,11 +104,52 @@ export async function runEstimateAgent(inventoryItems: any[], userLocation: any,
     
     return parsed;
   } catch (err) {
-    console.error('JSON parsing failed. Raw output:', final);
+    console.error('JSON parsing failed. Raw output (first 1000 chars):', final.substring(0, 1000));
     console.error('Parse error:', err);
     
-    // Last resort: try to extract JSON from anywhere in the response
+    // Try more aggressive JSON repair
     if (typeof final === 'string') {
+      try {
+        // Extract and clean JSON more aggressively
+        let repairAttempt = final;
+        
+        // Remove everything before first {
+        const startIndex = repairAttempt.indexOf('{');
+        if (startIndex !== -1) {
+          repairAttempt = repairAttempt.substring(startIndex);
+        }
+        
+        // Remove everything after last }
+        const endIndex = repairAttempt.lastIndexOf('}');
+        if (endIndex !== -1) {
+          repairAttempt = repairAttempt.substring(0, endIndex + 1);
+        }
+        
+        // More aggressive cleaning
+        repairAttempt = repairAttempt
+          .replace(/,(\s*[}\]])/g, '$1')  // Remove trailing commas
+          .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')  // Quote keys
+          .replace(/:\s*'([^']*)'/g, ':"$1"')  // Fix quotes
+          .replace(/:\s*`([^`]*)`/g, ':"$1"')  // Fix backticks
+          .replace(/:\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*([,}\]])/g, ':"$1"$2')  // Quote unquoted string values
+          .replace(/\\"/g, '"')  // Fix escaped quotes
+          .replace(/\n|\r|\t/g, ' ')  // Remove problematic whitespace
+          .replace(/\s+/g, ' ')  // Normalize spaces
+          .replace(/,\s*}/g, '}')  // Remove trailing commas before }
+          .replace(/,\s*]/g, ']'); // Remove trailing commas before ]
+        
+        console.log('Repair attempt (first 500 chars):', repairAttempt.substring(0, 500));
+        
+        const repairedParsed = JSON.parse(repairAttempt);
+        if (repairedParsed.line_items) {
+          console.log('✅ Successfully repaired and parsed JSON');
+          return repairedParsed;
+        }
+      } catch (repairErr) {
+        console.error('JSON repair also failed:', repairErr);
+      }
+      
+      // Last resort: try to extract JSON from anywhere in the response
       const jsonMatches = final.match(/\{[\s\S]*?\}/g);
       if (jsonMatches) {
         for (const match of jsonMatches) {

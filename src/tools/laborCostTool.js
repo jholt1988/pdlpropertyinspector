@@ -25,7 +25,7 @@ function createLaborCostTool(userLocation) {
                 name: 'Labor Cost Researcher',
                 instructions: `Search for labor rates of ${trade} for ${work_type} (${complexity}) in ${userLocation.city}, ${userLocation.region}. Return average or range with sources.`,
                 tools: [(0, agents_1.webSearchTool)({ userLocation })],
-                model: 'gpt-4.1-mini'
+                model: 'gpt-4o-mini'
             });
             return (0, agents_1.run)(agent, query);
         }

@@ -30,7 +30,7 @@ export function createMaterialCostTool(userLocation: UserLocation): Tool {
         name: 'Material Cost Researcher',
         instructions: `Find prices for ${item_type} (${quality_level}) in ${category} within ${userLocation.city}, ${userLocation.region}. Focus on common suppliers like Home Depot and Lowe's.`,
         tools: [webSearchTool({ userLocation })],
-        model: 'gpt-4.1-mini'
+        model: 'gpt-4o-mini'
       });
 
       return run(agent, query);

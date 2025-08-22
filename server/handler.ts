@@ -24,7 +24,12 @@ try {
 
 const EstimatePayload = z.object({
   inventoryItems: z.array(z.any()),
-  userLocation: z.object({ city: z.string(), region: z.string() }).passthrough().optional(),
+  userLocation: z.object({ 
+    city: z.string(), 
+    region: z.string(),
+    country: z.string().optional(),
+    type: z.literal('approximate').optional()
+  }).optional(),
   currency: z.string().optional(),
 });
 
@@ -122,8 +127,22 @@ export async function handleEstimateRequest(req: any, res: any) {
 
   const { inventoryItems, userLocation, currency } = parse.data;
 
+  // Provide default userLocation if not specified
+  const defaultUserLocation = {
+    city: 'Seattle',
+    region: 'WA',
+    country: 'US',
+    type: 'approximate' as const
+  };
+  
+  const finalUserLocation = userLocation ? {
+    ...defaultUserLocation,
+    ...userLocation,
+    type: 'approximate' as const // Ensure type is always set
+  } : defaultUserLocation;
+
   try {
-    const result = await runEstimateAgent(inventoryItems, userLocation, currency);
+    const result = await runEstimateAgent(inventoryItems, finalUserLocation, currency);
     res.json(result);
   } catch (err: any) {
     console.error('Estimate handler error:', err);

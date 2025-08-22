@@ -30,7 +30,7 @@ export function createLaborCostTool(userLocation: UserLocation): Tool {
         name: 'Labor Cost Researcher',
         instructions: `Search for labor rates of ${trade} for ${work_type} (${complexity}) in ${userLocation.city}, ${userLocation.region}. Return average or range with sources.`,
         tools: [webSearchTool({ userLocation })],
-        model: 'gpt-4.1-mini'
+        model: 'gpt-4o-mini'
       });
 
       return run(agent, query);

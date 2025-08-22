@@ -2,6 +2,18 @@
 <html>
 <head>
     <title>API Test</title>
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline';
+        connect-src 'self' http://localhost:3001 http://localhost:5173 http://localhost:5174 http://localhost:5175;
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data:;
+        font-src 'self';
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+        frame-ancestors 'none';
+    ">
 </head>
 <body>
     <h1>API Test</h1>
@@ -19,7 +31,7 @@
         async function testHealth() {
             log('🔄 Testing health endpoint...');
             try {
-                const response = await fetch('/api/../health'); // Go through Vite proxy
+                const response = await fetch('http://localhost:3001/health'); // Direct to backend
                 log('📡 Health status: ' + response.status);
                 const result = await response.json();
                 log('✅ Health result: ' + JSON.stringify(result));
@@ -42,7 +54,9 @@
                     }],
                     userLocation: {
                         city: 'Seattle',
-                        region: 'WA'
+                        region: 'WA',
+                        country: 'US',
+                        type: 'approximate'
                     },
                     currency: 'USD'
                 };

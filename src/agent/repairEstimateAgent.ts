@@ -19,10 +19,15 @@ You are a property repair estimator. For each inventory item:
 6. List required tools and materials
 7. Provide a detailed breakdown of costs
 
-IMPORTANT: Return ONLY valid JSON without any markdown formatting or code blocks. 
-Do NOT wrap your response in \`\`\`json or \`\`\` blocks.
+CRITICAL JSON FORMATTING RULES:
+- Return ONLY valid JSON without any markdown formatting or code blocks
+- Do NOT wrap your response in \`\`\`json or \`\`\` blocks
+- Use double quotes for ALL strings and property names
+- Do NOT use single quotes or backticks
+- Do NOT include trailing commas
+- Ensure all JSON syntax is valid
 
-Expected JSON structure:
+Required JSON structure:
 {
   "line_items": [
     {
@@ -32,43 +37,43 @@ Expected JSON structure:
       "currentCondition": "string",
       "location": "string",
       "fix": {
-        "laborHours": number,
-        "laborRate": number,
-        "partsCost": number,
-        "totalCost": number
+        "laborHours": 1.5,
+        "laborRate": 85,
+        "partsCost": 50,
+        "totalCost": 177.5
       },
       "replace": {
-        "laborHours": number,
-        "laborRate": number,
-        "partsCost": number,
-        "totalCost": number
+        "laborHours": 2,
+        "laborRate": 85,
+        "partsCost": 400,
+        "totalCost": 570
       },
-      "recommendedAction": "Fix" | "Replace",
+      "recommendedAction": "Fix",
       "instructions": {
-        "fix": ["step1", "step2"],
-        "replace": ["step1", "step2"]
+        "fix": ["Step 1", "Step 2", "Step 3"],
+        "replace": ["Step 1", "Step 2", "Step 3"]
       }
     }
   ],
   "summary": {
-    "totalFixCost": number,
-    "totalReplaceCost": number,
-    "totalRecommendedCost": number,
-    "overallRecommendation": "string",
-    "total_labor_cost": number,
-    "total_material_cost": number,
-    "total_project_cost": number,
-    "items_to_repair": number,
-    "items_to_replace": number
+    "totalFixCost": 177.5,
+    "totalReplaceCost": 570,
+    "totalRecommendedCost": 177.5,
+    "overallRecommendation": "Fix recommended for cost savings",
+    "total_labor_cost": 127.5,
+    "total_material_cost": 50,
+    "total_project_cost": 177.5,
+    "items_to_repair": 1,
+    "items_to_replace": 0
   },
   "metadata": {
-    "estimateDate": "ISO date string",
-    "currency": "string",
-    "location": "city, region"
+    "estimateDate": "2025-08-22T12:00:00Z",
+    "currency": "USD",
+    "location": "${userLocation.city}, ${userLocation.region}"
   }
 }
 
-Return ONLY the JSON object, no additional text or formatting.`,
+IMPORTANT: Return ONLY the JSON object above. No additional text, explanations, or formatting.`,
     tools: [
       createLaborCostTool(userLocation),
       createMaterialCostTool(userLocation),
