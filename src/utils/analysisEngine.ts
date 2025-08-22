@@ -135,7 +135,7 @@ export const analyzeInventoryAndGeneratePlan = async (
 
   const itemsToFix = flaggedItems.filter(item => item.recommendation === 'fix');
   const itemsToReplace = flaggedItems.filter(item => item.recommendation === 'replace');
-  const totalEstimatedCost = flaggedItems.reduce((sum, item) =>
+  const totalEstimatedCost = estimate.summary?.total_project_cost ?? flaggedItems.reduce((sum, item) =>
     sum + (item.recommendation === 'fix'
       ? (item.estimatedRepairCost || 0)
       : (item.estimatedReplacementCost || 0)), 0);
