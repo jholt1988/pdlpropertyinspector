@@ -43,7 +43,15 @@ export function inspectionToInventoryItems(inspection: Inspection): InventoryIte
       if (check.subItems && check.subItems.length > 0) {
         check.subItems.forEach(sub => pushItem(sub.name, sub.condition, sub.estimatedAge));
       } else {
-        pushItem(check.item, check.condition, check.estimatedAge);
+        check.subItems.forEach(sub => {
+          if (sub.condition) {
+            pushItem(sub.name, sub.condition, sub.estimatedAge);
+          }
+        });
+      } else {
+        if (check.condition) {
+          pushItem(check.item, check.condition, check.estimatedAge);
+        }
       }
     });
   });
