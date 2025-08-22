@@ -86,7 +86,7 @@ export function SocialCallbackPage() {
           providerUserId: socialResult.user.id,
           email: socialResult.user.email,
           name: socialResult.user.name,
-          avatar: socialResult.user.picture,
+          avatar: (socialResult.user as any).picture || socialResult.user.avatar,
         }
       );
 

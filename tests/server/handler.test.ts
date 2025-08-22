@@ -42,9 +42,8 @@ describe('handleEstimateRequest', () => {
   });
 
   it('calls runEstimateAgent on valid request', async () => {
-    // Inject a dev api key into the server's apiKeys (read from file) by mocking readFileSync
-    vi.mocked(require('fs').readFileSync).mockImplementation(() => JSON.stringify({ 'dev_api_key_example': { owner: 'dev' } }));
-
+    // The fs mock is already set up in the module-level mock above
+    
     const req = makeReq({ inventoryItems: [{ itemId: 'x' }], userLocation: { city: 'X', region: 'Y' } }, { 'x-api-key': 'dev_api_key_example' });
     const res = makeRes();
     await handleEstimateRequest(req, res);

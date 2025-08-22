@@ -2,7 +2,6 @@
 import { getNextSequence } from './sequenceGenerator'; // Assuming the sequence generator is in the same directory
 
 export const generatePropertyId = () => {
-  const timestampPart = Date.now().toString(36).slice(-4).toUpperCase();
   const randomPart = Math.random().toString(36).slice(2, 6).toUpperCase();
   const sequence = getNextSequence('property').toString().padStart(7, '0');
   return `PROP${sequence}${randomPart.slice(0, 3)}`;

@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/react';
 import DataInput from '../../../src/components/RepairPlan/DataInput';
-import { sampleInventory, sampleAnalysis, sampleConfig } from './sampleData';
+import { sampleInventory } from './sampleData';
 
 vi.mock('../../../src/contexts/StorageContext', () => ({
   useStorage: () => ({ inspections: [] })
@@ -18,7 +18,6 @@ describe('DataInput component', () => {
         inventoryData={sampleInventory}
         setInventoryData={setInventoryData}
         setAnalysisResults={setAnalysisResults}
-        systemConfig={sampleConfig}
       />
     );
     expect(screen.getByText(/Current Inventory/)).toBeInTheDocument();

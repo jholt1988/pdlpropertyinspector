@@ -61,7 +61,6 @@ export async function generateDetailedRepairEstimate(
 
   // Fallback: return deterministic mock data (keeps frontend working without backend)
   const mockLineItems: EstimateLineItem[] = inventoryItems
-    .filter(item => item.currentCondition === 'Poor' || item.currentCondition === 'Damaged' || item.currentCondition === 'Non-functional')
     .map(item => ({
       itemId: item.itemId,
       itemName: item.itemName,
@@ -80,7 +79,9 @@ export async function generateDetailedRepairEstimate(
         partsCost: item.originalCost * 0.8,
         totalCost: item.originalCost * 1.2
       },
-      recommendedAction: item.currentCondition === 'Non-functional' ? 'Replace' : 'Fix',
+      recommendedAction: item.currentCondition === 'Non-functional' ? 'Replace' 
+        : item.currentCondition === 'Damaged' ? 'Replace'
+        : 'Fix',
       instructions: {
         fix: [
           `Assess ${item.itemName} condition`,

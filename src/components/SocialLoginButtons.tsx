@@ -1,20 +1,6 @@
 import { useState } from 'react';
 import { SocialAuthService } from '../services/socialAuthService';
 
-// TypeScript declaration for import.meta.env
-declare global {
-  interface ImportMeta {
-    readonly env: {
-      readonly VITE_DEMO_MODE?: string;
-      readonly NODE_ENV?: string;
-      readonly VITE_GOOGLE_CLIENT_ID?: string;
-      readonly VITE_MICROSOFT_CLIENT_ID?: string;
-      readonly VITE_APPLE_CLIENT_ID?: string;
-      readonly VITE_JWT_SECRET?: string;
-    }
-  }
-}
-
 interface SocialLoginButtonsProps {
   onSuccess?: () => void;
   onError?: (error: string) => void;
@@ -31,8 +17,8 @@ export function SocialLoginButtons({ onSuccess, onError, onAccountLinking }: Soc
 
     try {
       // In demo mode, simulate the OAuth flow
-      const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true' || 
-                        import.meta.env.NODE_ENV === 'development';
+      const isDemoMode = import.meta.env?.VITE_DEMO_MODE === 'true' ||
+                        import.meta.env?.NODE_ENV === 'development';
       
       if (isDemoMode) {
         const result = await SocialAuthService.initiateSocialLogin(provider);

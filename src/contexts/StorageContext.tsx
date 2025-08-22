@@ -95,7 +95,7 @@ export function StorageProvider({ children }: { children: React.ReactNode }) {
     if (property.isMultiUnit && property.units && property.units > 1) {
       // Multi-unit property: create inspection for each unit
       for (let unitNumber = 1; unitNumber <= property.units; unitNumber++) {
-        const inspectionId = generateInspectionId(property.id, unitNumber);
+        const inspectionId = generateInspectionId(property.id);
         const includeCommonAreas = unitNumber === 1; // Only first unit gets common areas
         const rooms = generateInspectionStructure(includeCommonAreas);
         
@@ -123,7 +123,7 @@ export function StorageProvider({ children }: { children: React.ReactNode }) {
       }
     } else {
       // Single-family home: create one inspection
-      const inspectionId = generateInspectionId(property.id, 1);
+      const inspectionId = generateInspectionId(property.id);
       const rooms = generateInspectionStructure(false);
       
       const inspection: Inspection = {

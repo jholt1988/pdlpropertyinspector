@@ -2,7 +2,7 @@ import { JWTPayload, SignJWT, jwtVerify } from 'jose';
 
 // JWT configuration
 const JWT_SECRET = new TextEncoder().encode(
-  import.meta.env.VITE_JWT_SECRET || 'your-super-secret-jwt-key-change-in-production'
+  import.meta.env?.VITE_JWT_SECRET || 'your-super-secret-jwt-key-change-in-production'
 );
 
 const JWT_ISSUER = 'property-inspector-app';

@@ -32,14 +32,23 @@ export interface SocialLoginResponse {
 export class SocialAuthService {
   private static users: Map<string, User & { socialProviderId?: string; socialProviderUserId?: string }> = new Map();
   private static sessions: Map<string, { userId: string; tokenFamily: string; createdAt: string }> = new Map();
+  
+  // Map provider ID to expected provider type
+  private static mapProvider(providerId: string): 'email' | 'google' | 'microsoft' | 'apple' {
+    if (providerId === 'google' || providerId === 'microsoft' || providerId === 'apple') {
+      return providerId;
+    }
+    return 'email'; // fallback
+  }
+  
   /**
    * Initiates social login flow
    */
   static async initiateSocialLogin(provider: 'google' | 'microsoft' | 'apple'): Promise<SocialLoginResponse | void> {
     try {
       // Check if we're in demo mode (for development/testing)
-      const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true' || 
-                        import.meta.env.NODE_ENV === 'development';
+      const isDemoMode = import.meta.env?.VITE_DEMO_MODE === 'true' ||
+                        import.meta.env?.NODE_ENV === 'development';
 
       if (isDemoMode) {
         // In demo mode, use simulated OAuth
@@ -166,7 +175,7 @@ export class SocialAuthService {
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
         emailVerified: true,
-        provider: socialUser.providerId,
+        provider: this.mapProvider(socialUser.providerId),
         company: undefined,
         phone: undefined,
         socialProviderId: socialUser.providerId,
@@ -276,7 +285,7 @@ export class SocialAuthService {
       // Update user with social account information
       const updatedUser: User & { socialProviderId?: string; socialProviderUserId?: string } = {
         ...loginResult.user!,
-        provider: socialUser.providerId,
+        provider: this.mapProvider(socialUser.providerId),
         socialProviderId: socialUser.providerId,
         socialProviderUserId: socialUser.providerUserId,
         avatar: socialUser.avatar || loginResult.user!.avatar,
@@ -316,11 +325,10 @@ export class SocialAuthService {
       }
 
       // Convert back to email provider
+      const { socialProviderId, socialProviderUserId, ...userWithoutSocial } = user;
       const updatedUser: User = {
-        ...user,
+        ...userWithoutSocial,
         provider: 'email',
-        socialProviderId: undefined,
-        socialProviderUserId: undefined,
       };
 
       await this.updateUser(updatedUser);
