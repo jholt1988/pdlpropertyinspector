@@ -13,10 +13,10 @@ const mockInventoryItem: InventoryItem = {
 
 const mockFlaggedItem: FlaggedItem = {
   ...mockInventoryItem,
+  flagReason: 'lifecycle',
+  flagDetails: 'Item is past its expected lifecycle.',
   recommendation: 'replace',
-  reason: 'Item is past its expected lifecycle.',
-  estimatedCost: 3500,
-  priority: 'high',
+  estimatedReplacementCost: 3500,
   requiredResources: ['HVAC Contractor', 'New HVAC Unit'],
   estimatedTimeline: '1-2 weeks',
 };

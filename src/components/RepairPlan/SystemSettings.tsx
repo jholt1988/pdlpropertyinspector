@@ -9,13 +9,16 @@ interface SystemSettingsProps {
 
 const SystemSettings: React.FC<SystemSettingsProps> = ({ config, setConfig }) => {
   const updateConfig = (section: keyof SystemConfig, key: string, value: number) => {
-    setConfig({
-      ...config,
-      [section]: {
-        ...config[section],
-        [key]: value
-      }
-    });
+    const currentSection = config[section];
+    if (typeof currentSection === 'object' && currentSection !== null) {
+      setConfig({
+        ...config,
+        [section]: {
+          ...currentSection as Record<string, number>,
+          [key]: value
+        }
+      });
+    }
   };
 
   const updateRepairThreshold = (value: number) => {

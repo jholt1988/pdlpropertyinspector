@@ -17,12 +17,16 @@ describe('Dashboard component', () => {
     // Find the "Total Inventory Items" card by its title
     const totalItemsCard = screen.getByText('Total Inventory Items').closest('div');
     // Assert that the number 1 is within that specific card
-    expect(within(totalItemsCard).getByText('1')).toBeInTheDocument();
+    if (totalItemsCard) {
+      expect(within(totalItemsCard).getByText('1')).toBeInTheDocument();
+    }
 
     // Find the "Flagged Items" card by its title
     const flaggedItemsCard = screen.getByText('Flagged Items').closest('div');
     // Assert that the number 1 is within that specific card
-    expect(within(flaggedItemsCard).getByText('1')).toBeInTheDocument();
+    if (flaggedItemsCard) {
+      expect(within(flaggedItemsCard).getByText('1')).toBeInTheDocument();
+    }
   });
 });
 

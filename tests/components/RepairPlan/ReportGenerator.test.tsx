@@ -10,11 +10,15 @@ describe('ReportGenerator component', () => {
     render(<ReportGenerator analysisResults={mockAnalysisResults} />);
 
     // Check for the correct title and other key information
-    const preview = screen.getByText('Report Preview').parentElement.nextElementSibling.querySelector('pre');
+    const reportPreviewElement = screen.getByText('Report Preview');
+    const parentElement = reportPreviewElement.parentElement;
+    const nextElement = parentElement?.nextElementSibling;
+    const preview = nextElement?.querySelector('pre');
+    
     expect(preview).toBeInTheDocument();
-    expect(preview.textContent).toContain('# Property Inventory Remediation Plan');
-    expect(preview.textContent).toContain('**Total Items Analyzed:** 1');
-    expect(preview.textContent).toContain('**Total Estimated Cost:** $3,500');
+    expect(preview?.textContent).toContain('# Property Inventory Remediation Plan');
+    expect(preview?.textContent).toContain('**Total Items Analyzed:** 1');
+    expect(preview?.textContent).toContain('**Total Estimated Cost:** $3,500');
   });
 });
 

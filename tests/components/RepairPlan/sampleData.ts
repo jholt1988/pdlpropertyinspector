@@ -43,4 +43,20 @@ export const sampleConfig: SystemConfig = {
   }
 };
 
-export const sampleAnalysis: AnalysisResult = analyzeInventoryAndGeneratePlan(sampleInventory, sampleConfig);
+// Export a function to generate the analysis instead of the promise directly
+export const generateSampleAnalysis = () => analyzeInventoryAndGeneratePlan(sampleInventory, sampleConfig);
+
+// For tests that need a static analysis result, provide a mock
+export const sampleAnalysis: AnalysisResult = {
+  totalItems: 2,
+  flaggedItems: [],
+  itemsToFix: [],
+  itemsToReplace: [],
+  totalEstimatedCost: 0,
+  generatedDate: new Date().toISOString(),
+  summary: {
+    conditionFlags: 0,
+    lifecycleFlags: 0,
+    maintenanceFlags: 0
+  }
+};

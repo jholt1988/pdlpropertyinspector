@@ -23,7 +23,7 @@ describe('PermissionGuard', () => {
   });
 
   it('renders fallback when permission denied', () => {
-    const { queryByText, getByText } = render(
+    const { getByText } = render(
       <PermissionGuard action="read" resource="test" fallback={<span>no</span>}>
         <span>allowed</span>
       </PermissionGuard>

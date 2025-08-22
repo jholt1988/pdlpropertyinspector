@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authService, User, LoginResult, RegisterResult } from '../services/authService';
+import { authService, LoginResult, RegisterResult } from '../services/authService';
+import { User } from '../types/user';
 import { verifyAccessToken, extractTokenFromHeader } from '../utils/security/jwtUtils';
 
 export interface AuthContextType {
