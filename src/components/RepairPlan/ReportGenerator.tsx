@@ -4,10 +4,9 @@ import { FileText, Download, Copy, Check } from 'lucide-react';
 
 interface ReportGeneratorProps {
   analysisResults: AnalysisResult | null;
-  onSavePlan?: () => void;
 }
 
-const ReportGenerator: React.FC<ReportGeneratorProps> = ({ analysisResults, onSavePlan }) => {
+const ReportGenerator: React.FC<ReportGeneratorProps> = ({ analysisResults }) => {
   const [copied, setCopied] = useState(false);
 
   if (!analysisResults) {
@@ -210,14 +209,7 @@ ${item.requiredResources ? item.requiredResources.map(resource => `- ${resource}
           Download Report
         </button>
 
-        {onSavePlan && (
-          <button
-            onClick={onSavePlan}
-            className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
-          >
-            Save Repair Plan
-          </button>
-        )}
+        {/* Save functionality removed */}
       </div>
 
       {/* Report Preview */}
