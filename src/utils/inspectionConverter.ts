@@ -41,17 +41,13 @@ export function inspectionToInventoryItems(inspection: Inspection): InventoryIte
 
       // If the checklist entry contains sub-items, convert each one individually
       if (check.subItems && check.subItems.length > 0) {
-        check.subItems.forEach(sub => pushItem(sub.name, sub.condition, sub.estimatedAge));
-      } else {
         check.subItems.forEach(sub => {
           if (sub.condition) {
             pushItem(sub.name, sub.condition, sub.estimatedAge);
           }
         });
-      } else {
-        if (check.condition) {
-          pushItem(check.item, check.condition, check.estimatedAge);
-        }
+      } else if (check.condition) {
+        pushItem(check.item, check.condition, check.estimatedAge);
       }
     });
   });
