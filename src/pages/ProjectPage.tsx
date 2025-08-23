@@ -5,10 +5,7 @@ import DataInput from '../components/RepairPlan/DataInput';
 import AnalysisResults from '../components/RepairPlan/AnalysisResults';
 import ReportGenerator from '../components/RepairPlan/ReportGenerator';
 import SystemSettings from '../components/RepairPlan/SystemSettings';
-import { InventoryItem, AnalysisResult, SystemConfig, Inspection, RepairPlan } from '../types';
-import { useStorage } from '../contexts/StorageContext';
-import { generateInspectionId } from '../utils/idGenerator';
-import { runRepairEstimatorAgent } from '../services/generateEstimate';
+import { InventoryItem, AnalysisResult, SystemConfig } from '../types';
 
 
 type TabId = 'dashboard' | 'input' | 'analysis' | 'report' | 'settings';
@@ -17,8 +14,6 @@ function ProjectPage() {
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
   const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
   const [analysisResults, setAnalysisResults] = useState<AnalysisResult | null>(null);
-  const [currentInspection, setCurrentInspection] = useState<Inspection | null>(null);
-  const { saveRepairPlan } = useStorage();
   const [systemConfig, setSystemConfig] = useState<SystemConfig>({
     repairThreshold: 0.6,
     laborRates: {
@@ -44,41 +39,6 @@ function ProjectPage() {
     }
   });
 
-  const handleSavePlan = async () => {
-    if (!analysisResults) {
-      alert('Run analysis before saving the plan');
-      return;
-    }
-    console.log('Running Property Repair Estimator Agent...');
-    // Convert flagged items back to InventoryItem format for the estimator
-    const estimateData = analysisResults.flaggedItems.map(item => ({
-      itemId: item.itemId,
-      itemName: item.itemName,
-      category: item.category,
-      currentCondition: item.currentCondition,
-      purchaseDate: item.purchaseDate,
-      lastMaintenanceDate: item.lastMaintenanceDate,
-      originalCost: item.originalCost,
-      currentMarketValue: item.currentMarketValue,
-      location: item.location,
-      description: item.description
-    }));
-    const estimate = await runRepairEstimatorAgent(estimateData, "", 'USD');
-    console.log(estimate.overall_project_estimate);
-    const plan: RepairPlan = {
-      id: generateInspectionId('plan_'),
-      propertyId: currentInspection?.propertyId || 'unknown',
-      unitNumber: currentInspection?.unitNumber,
-      inspectionId: currentInspection?.id,
-      inventoryData,
-      analysisResults,
-      estimate,
-      createdAt: new Date().toISOString(),
-    };
-    await saveRepairPlan(plan);
-    alert('Repair plan saved');
-  };
-
   const navigation: { id: TabId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'input', label: 'Data Input', icon: Database },
@@ -96,12 +56,11 @@ function ProjectPage() {
           inventoryData={inventoryData}
           setInventoryData={setInventoryData}
           setAnalysisResults={setAnalysisResults}
-          onInspectionImported={setCurrentInspection}
         />;
       case 'analysis':
         return <AnalysisResults analysisResults={analysisResults} />;
       case 'report':
-        return <ReportGenerator analysisResults={analysisResults} onSavePlan={handleSavePlan} />;
+        return <ReportGenerator analysisResults={analysisResults} />;
       case 'settings':
         return <SystemSettings config={systemConfig} setConfig={setSystemConfig} />;
       default:
