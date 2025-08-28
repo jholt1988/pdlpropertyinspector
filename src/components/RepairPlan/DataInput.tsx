@@ -27,10 +27,14 @@ const DataInput: React.FC<DataInputProps> = ({
   const { inspections } = useStorage();
   const [selectedInspection, setSelectedInspection] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    setError(null); // Clear any previous errors
+    setSuccessMessage(null); // Clear any previous success messages
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -39,8 +43,13 @@ const DataInput: React.FC<DataInputProps> = ({
       try {
         if (inputMethod === 'csv') {
           const lines = content.split('\n').filter(line => line.trim());
+          if (lines.length < 2) {
+            setError('CSV file must contain at least a header row and one data row');
+            return;
+          }
+          
           const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-          const data = lines.slice(1).map(line => {
+          const data = lines.slice(1).map((line) => {
             const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
             const item: any = {};
             headers.forEach((header, index) => {
@@ -67,13 +76,43 @@ const DataInput: React.FC<DataInputProps> = ({
               else if (key.includes('description')) item.description = value;
             });
             return item as InventoryItem;
-          }).filter(item => item.itemId && item.itemName);
+          }).filter((item, index) => {
+            if (!item.itemId || !item.itemName) {
+              console.warn(`Row ${index + 2} missing required fields (itemId or itemName)`);
+              return false;
+            }
+            return true;
+          });
           
-          setInventoryData(data);
+          if (data.length === 0) {
+            setError('No valid items found in CSV file. Please check the format.');
+            return;
+          }
+          
+          setInventoryData([...inventoryData, ...data]);
+          setError(null); // Clear any existing errors
+          setSuccessMessage(`Successfully imported ${data.length} items from CSV file`);
+          setTimeout(() => setSuccessMessage(null), 5000);
           
         } else if (inputMethod === 'json') {
-          const data = JSON.parse(content);
-          setInventoryData(Array.isArray(data) ? data : [data]);
+          const parsedData = JSON.parse(content);
+          const data = Array.isArray(parsedData) ? parsedData : [parsedData];
+          
+          const validData = data.filter(item => item.itemId && item.itemName);
+          if (validData.length === 0) {
+            setError('No valid items found in JSON file. Items must have itemId and itemName.');
+            return;
+          }
+          
+          setInventoryData([...inventoryData, ...validData]);
+          setError(null); // Clear any existing errors
+          setSuccessMessage(`Successfully imported ${validData.length} items from JSON file`);
+          setTimeout(() => setSuccessMessage(null), 5000);
+        }
+        
+        // Clear the file input for next upload
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
         }
         
         // Auto-run analysis
@@ -81,7 +120,18 @@ const DataInput: React.FC<DataInputProps> = ({
         
       } catch (err) {
         console.error('File parse error:', err);
-        setError('Error parsing file. Please check the format and try again.');
+        setError(`Error parsing ${inputMethod.toUpperCase()} file: ${err instanceof Error ? err.message : 'Invalid format'}`);
+        // Clear the file input on error
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      }
+    };
+    
+    reader.onerror = () => {
+      setError('Error reading file. Please try again.');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
       }
     };
     
@@ -118,6 +168,7 @@ const DataInput: React.FC<DataInputProps> = ({
     }
     
     setError(null); // Clear any previous errors
+    setSuccessMessage(null); // Clear any success messages
     
     try {
       // Use a default location if not provided
@@ -240,13 +291,37 @@ const DataInput: React.FC<DataInputProps> = ({
     
     setInventoryData([...inventoryData, ...testItems]);
     setError(null);
+    setSuccessMessage(`Loaded ${testItems.length} test items`);
+    setTimeout(() => setSuccessMessage(null), 3000);
+  };
+
+  const downloadSampleCSV = () => {
+    const csvContent = `ItemID,ItemName,Category,CurrentCondition,PurchaseDate,OriginalCost,CurrentMarketValue,Location,Description
+sample-001,"Kitchen Faucet",plumbing,Poor,2020-01-15,150,80,Kitchen,"Leaking and has mineral buildup"
+sample-002,"Living Room Carpet",flooring,Damaged,2019-03-10,800,200,"Living Room","Stained and worn in high traffic areas"
+sample-003,"HVAC Unit",hvac,Non-functional,2015-08-20,3500,500,"Utility Room","Compressor failed not cooling properly"`;
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'sample_inventory.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   };
 
   return (
     <div className="p-6">
       {error && (
-        <div className="mb-4 p-2 text-sm text-red-700 bg-red-100 rounded">
+        <div className="mb-4 p-3 text-sm text-red-700 bg-red-100 border border-red-200 rounded-md">
           {error}
+        </div>
+      )}
+      {successMessage && (
+        <div className="mb-4 p-3 text-sm text-green-700 bg-green-100 border border-green-200 rounded-md">
+          {successMessage}
         </div>
       )}
       <div className="mb-6">
@@ -257,12 +332,20 @@ const DataInput: React.FC<DataInputProps> = ({
               Import inventory data from CSV/JSON files or add items manually.
             </p>
           </div>
-          <button
-            onClick={loadTestData}
-            className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
-          >
-            Load Test Data
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={downloadSampleCSV}
+              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors text-sm"
+            >
+              Download Sample CSV
+            </button>
+            <button
+              onClick={loadTestData}
+              className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
+            >
+              Load Test Data
+            </button>
+          </div>
         </div>
       </div>
 
@@ -317,7 +400,11 @@ const DataInput: React.FC<DataInputProps> = ({
             <button
               onClick={importFromInspection}
               disabled={!selectedInspection}
-              className={`btn ${selectedInspection ? 'btn-primary' : 'btn-secondary'}`}
+              className={`px-4 py-2 rounded-md transition-colors ${
+                selectedInspection 
+                  ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
             >
               Import
             </button>
@@ -346,12 +433,18 @@ const DataInput: React.FC<DataInputProps> = ({
               onChange={handleFileUpload}
               className="hidden"
             />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
-            >
-              Choose File
-            </button>
+            <div className="space-y-2">
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
+              >
+                <Upload className="h-4 w-4" />
+                Choose {inputMethod.toUpperCase()} File
+              </button>
+              <p className="text-xs text-gray-500">
+                Max file size: 10MB
+              </p>
+            </div>
           </div>
         </div>
       )}
