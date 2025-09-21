@@ -1,5 +1,4 @@
 // components/ToastContainer.tsx
-import React from 'react';
 import { Toast } from '../hooks/useToast';
 
 interface ToastContainerProps {

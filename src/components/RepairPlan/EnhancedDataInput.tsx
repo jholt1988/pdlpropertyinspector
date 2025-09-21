@@ -1,11 +1,10 @@
 // components/RepairPlan/EnhancedDataInput.tsx
 import React, { useState, useRef } from 'react';
-import { Upload, Plus, FileText, Database, Trash2, Calculator } from 'lucide-react';
+import { Upload, Plus, Database, Trash2, Calculator } from 'lucide-react';
 import { InventoryItem, AnalysisResult, Inspection, UserLocation } from '../../types';
 import { generateEnhancedRepairEstimate, EnhancedDetailedEstimate } from '../../services/enhancedEstimate';
 import { useStorage } from '../../contexts/StorageContext';
 import { inspectionToInventoryItems } from '../../utils/inspectionConverter';
-import { createAnalysisResultFromEstimateResult, createFallbackAnalysisResult } from '../../utils/dataNormalization';
 import { useToast } from '../../hooks/useToast';
 import { ToastContainer } from '../ToastContainer';
 
